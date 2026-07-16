@@ -15,7 +15,7 @@ A soccer version of **82-0** (82-0.com), the viral NBA browser game. Same exact 
 
 ## Simulation
 
-Pure, seeded, deterministic: `simulateSeason(xi, formation, seed)`. Attack rating weights FW > MF > DF; defense weights DF + GK > MF. 19 opponents of spread strengths, each faced twice; per-match goals sampled from Poisson distributions driven by attack-vs-defense differentials, so draws happen naturally. Constants tuned via Monte Carlo (`scripts/tune.ts`) to targets: median draft wins the league ~50%, goes unbeaten ~10%, perfect <0.5%; god-tier drafts perfect ~10–15%.
+Pure, seeded, deterministic: `simulateSeason(xi, formation, seed)`. Attack rating weights FW > MF > DF; defense weights DF + GK > MF. 19 opponents of spread strengths, each faced twice; per-match goals sampled from Poisson distributions driven by attack-vs-defense differentials, so draws happen naturally. Constants tuned via Monte Carlo (`scripts/tune.ts`). Achieved curve (flat-rated archetype XIs, 10k seasons): 82 → 1% champions; 87 → 44% champions / 2.6% invincible; 92 → 95% / 26% / 0.8% perfect; 97 → 99.8% / 63% / ~16% perfect. *Note:* the original "median draft goes unbeaten ~10%" target was amended after a 36-config grid search showed median unbeaten never exceeds ~4% at any sane config — 38 matches of real draw/upset math make unbeaten seasons inherently elite, which fits the game: Invincible is the namesake tier and should demand a strong draft.
 
 ## Data
 
