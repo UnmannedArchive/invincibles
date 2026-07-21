@@ -5,6 +5,11 @@ import englandC from '../data/players/england-c.json';
 import englandD from '../data/players/england-d.json';
 import spainA from '../data/players/spain-a.json';
 import spainB from '../data/players/spain-b.json';
+import italyA from '../data/players/italy-a.json';
+import italyB from '../data/players/italy-b.json';
+import italyC from '../data/players/italy-c.json';
+import franceA from '../data/players/france-a.json';
+import franceB from '../data/players/france-b.json';
 
 interface RawPlayer {
   name: string;
@@ -24,6 +29,11 @@ const FILES: Array<[RawPlayer[], number]> = [
   [englandD, 1500],
   [spainA, 2000],
   [spainB, 2500],
+  [italyA, 3000],
+  [italyB, 3500],
+  [italyC, 4000],
+  [franceA, 4500],
+  [franceB, 5000],
 ];
 
 export const PLAYERS: Player[] = FILES.flatMap(([players, base]) =>
