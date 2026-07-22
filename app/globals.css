@@ -908,6 +908,88 @@ body {
   padding: 2px 0;
 }
 
+/* ---- Outlook: the season you didn't get -------------------------------
+   One recessive series (a thousand simulated seasons) plus one highlighted
+   bucket for the season you actually played. The highlight carries a label
+   as well as a colour, so it never depends on colour alone.
+------------------------------------------------------------------------- */
+.outlook {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 14px 14px 12px;
+  margin: 0;
+  backdrop-filter: blur(8px);
+}
+.outlook-loading,
+.outlook-lede {
+  color: var(--chalk-dim);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 8px 0 0;
+}
+.outlook-lede b {
+  color: var(--chalk);
+  font-weight: 700;
+}
+.outlook-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 86px;
+  margin-top: 16px;
+}
+.outlook-bar {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: #4a6ea8;
+  border-radius: 4px 4px 0 0;
+}
+.outlook-bar.is-you {
+  background: var(--ice);
+}
+.outlook-flag {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 4px;
+  font-family: var(--font-data);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ice);
+}
+.outlook-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-family: var(--font-data);
+  font-size: 0.58rem;
+  color: var(--chalk-faint);
+}
+.outlook-rates {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(120, 170, 235, 0.14);
+}
+.outlook-rates dt {
+  font-family: var(--font-data);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+.outlook-rates dd {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin: 3px 0 0;
+  color: var(--chalk);
+}
+
 /* ---- Ladder key ------------------------------------------------------- */
 .ladder-row {
   display: flex;

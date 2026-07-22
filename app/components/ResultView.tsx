@@ -4,6 +4,7 @@ import type { RunState } from "@/lib/run";
 import { getFormation } from "@/lib/formations";
 import { managerById } from "@/lib/managers";
 import { Pitch } from "./Pitch";
+import { Outlook } from "./Outlook";
 
 const TIER_LABEL: Record<Tier, string> = {
   perfect: "Perfect",
@@ -139,6 +140,8 @@ export function ResultView({
       </div>
 
       <FinalTable table={result.table} />
+
+      <Outlook run={run} result={result} />
 
       <Pitch run={run} />
 

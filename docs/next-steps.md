@@ -21,6 +21,8 @@ This is the single highest-value change on this list. It converts the core loop 
 
 ## 2. Show the season you *didn't* get
 
+> **Shipped 2026-07-22.** `lib/outlook.ts` replays the XI across 1,000 seeds; the result page shows the distribution with your season marked, plus how often this squad wins the league, goes unbeaten and wins all 38.
+
 Each XI now plays exactly one season, which is the right call for honesty but hides how good the team actually was — a great XI can still draw four and lose the title, and the player has no way to know whether they were unlucky.
 
 Run the same XI across ~1,000 seeds client-side (the sim does 10k in seconds) and show the distribution of points with your actual season marked on it: *"this XI wins the league 62% of the time. You got the 11th percentile."* Being robbed is more shareable than winning, and it costs nothing — no database, no server, just the engine already in the bundle.
@@ -34,6 +36,8 @@ The Wordle mechanic, and this game is shaped for it: derive the day's eleven spi
 No database needed: the date *is* the seed. `/daily` plus a "today's draft" badge on the result card.
 
 ## 4. Make the share text as good as the share link
+
+> **Shipped 2026-07-22.** `lib/share.ts`. Uses the Web Share sheet on mobile and the clipboard everywhere else.
 
 Right now the button copies a URL. Wordle spread on a **text block** people could paste anywhere, no click required. Copy something like:
 

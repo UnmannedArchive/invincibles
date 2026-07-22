@@ -16,6 +16,7 @@ import {
 import { managerShortlist, type Manager } from "@/lib/managers";
 import { playRun } from "@/lib/replay";
 import { sharedFromRun, encodeRun } from "@/lib/encode";
+import { shareText } from "@/lib/share";
 import { mulberry32 } from "@/lib/rng";
 import type { Player, SeasonResult } from "@/lib/types";
 import { FormationPicker } from "./components/FormationPicker";
@@ -110,12 +111,25 @@ export default function Home() {
     setPhase("reveal");
   };
 
+  // Share the block, not just the link: the squares tell the story before
+  // anyone has to click, and the URL rides along at the bottom.
   const share = async () => {
+    if (!result) return;
     const code = encodeRun(sharedFromRun(run));
     const url = `${window.location.origin}/r/${code}`;
+    const text = shareText(run, result, url);
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch {
+        // cancelled or unsupported payload — fall through to the clipboard
+      }
+    }
     try {
-      await navigator.clipboard.writeText(url);
-      setToast("Link copied — paste it anywhere.");
+      await navigator.clipboard.writeText(text);
+      setToast("Season copied — paste it anywhere.");
     } catch {
       setToast(url);
     }
