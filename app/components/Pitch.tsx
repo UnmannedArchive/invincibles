@@ -42,9 +42,9 @@ export function Pitch({ run }: { run: RunState }) {
             style={{ top: `${100 - slot.x}%`, left: `${slot.y}%` }}
           >
             {player ? (
-              <MiniCard player={player} />
+              <MiniCard player={player} position={slot.label} />
             ) : (
-              <div className="empty-card">{slot.pos}</div>
+              <div className="empty-card">{slot.label}</div>
             )}
           </div>
         );

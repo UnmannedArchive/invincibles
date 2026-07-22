@@ -1,5 +1,5 @@
 import { attributesFor } from "@/lib/attributes";
-import { eraOf, monogramOf, surnameOf, tierOf } from "@/lib/kit";
+import { displayName, eraOf, monogramOf, tierOf } from "@/lib/kit";
 import type { Player } from "@/lib/types";
 
 /** The crystal shards a Team of the Year card wears instead of a photo. */
@@ -44,7 +44,7 @@ export function PlayerCard({
           <Shards />
         </span>
 
-        <span className="fut-name">{surnameOf(player.name)}</span>
+        <span className="fut-name">{displayName(player)}</span>
 
         <span className="fut-attrs">
           {attrs.map((a) => (
@@ -58,16 +58,20 @@ export function PlayerCard({
   );
 }
 
-/** Pitch-sized: rating, position, surname — no room for the stat block. */
-export function MiniCard({ player }: { player: Player }) {
+/**
+ * Pitch-sized: rating, position, name — no room for the stat block. `position`
+ * is the slot the player was drafted into (LB, CDM, RW …) rather than their
+ * broad group, so the pitch reads like a team sheet.
+ */
+export function MiniCard({ player, position }: { player: Player; position?: string }) {
   return (
     <span className={`fut fut-sm fut-${tierOf(player.rating)}`}>
       <span className="fut-body">
         <span className="fut-stat">
           <span className="fut-rating">{player.rating}</span>
-          <span className="fut-pos">{player.pos}</span>
+          <span className="fut-pos">{position ?? player.pos}</span>
         </span>
-        <span className="fut-name">{surnameOf(player.name)}</span>
+        <span className="fut-name">{displayName(player)}</span>
       </span>
     </span>
   );

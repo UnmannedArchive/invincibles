@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { replayFromCode } from "@/lib/replay";
 import { getFormation } from "@/lib/formations";
-import { surnameOf, tierOf, type CardTier } from "@/lib/kit";
+import { displayName, tierOf, type CardTier } from "@/lib/kit";
 import type { Player, Tier } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -39,7 +39,7 @@ function ordinal(n: number): string {
   return n + (suffix[(v - 20) % 10] || suffix[v] || suffix[0]);
 }
 
-function MiniCard({ player }: { player: Player }) {
+function MiniCard({ player, position }: { player: Player; position: string }) {
   const color = CARD_COLOR[tierOf(player.rating)];
   return (
     <div
@@ -57,7 +57,7 @@ function MiniCard({ player }: { player: Player }) {
     >
       <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
         <span style={{ fontSize: 34, fontWeight: 800, color }}>{player.rating}</span>
-        <span style={{ fontSize: 15, color, letterSpacing: 1 }}>{player.pos}</span>
+        <span style={{ fontSize: 15, color, letterSpacing: 1 }}>{position}</span>
       </div>
       <div
         style={{
@@ -69,7 +69,7 @@ function MiniCard({ player }: { player: Player }) {
           color: INK,
         }}
       >
-        {surnameOf(player.name).slice(0, 11)}
+        {displayName(player).slice(0, 13)}
       </div>
     </div>
   );
@@ -134,8 +134,8 @@ export async function GET(req: Request) {
         </div>
 
         <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-          {xi.map((player) => (
-            <MiniCard key={player.id} player={player} />
+          {xi.map((player, i) => (
+            <MiniCard key={player.id} player={player} position={formation.slots[i].label} />
           ))}
         </div>
       </div>

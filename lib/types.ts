@@ -11,6 +11,8 @@ export interface Player {
 
 export interface Slot {
   pos: Pos;
+  /** the position as a player would name it: LB, CB, CDM, LW, ST … */
+  label: string;
   /** pitch coordinates as percentages, x: 0 left goal line → 100 right, y: 0 top touchline → 100 bottom */
   x: number;
   y: number;
