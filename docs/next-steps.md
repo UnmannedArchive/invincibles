@@ -55,8 +55,6 @@ The result gives you a record, a table and your XI. It doesn't tell you the stor
 
 Honest list of what's still rough, from working through the code:
 
-- **The pick sheet doesn't handle Escape or trap focus.** It's a modal; keyboard and screen-reader users can tab out of it into the page behind. Real accessibility bug, small fix.
-- **No `app/error.tsx`.** If the client ever throws, the player gets a blank page instead of anything branded.
 - **No custom analytics events.** Vercel Analytics is wired in but only counts page views. The number that matters is *what fraction of people who start a draft finish it* — instrument start / pick / complete / share, or you'll be guessing at what to fix next.
 - **No home-screen identity.** There's an icon but no `apple-icon` or web manifest, so "add to home screen" looks unfinished on iOS.
 - **The 38-match reveal is ~4.5s and has a skip, but it's the same every time.** Second-time players will skip it every time; consider making the skip sticky (remember the preference).

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { PlayerCard } from "./PlayerCard";
 import type { Player, Pos } from "@/lib/types";
 
@@ -24,12 +25,43 @@ export function PickSheet({
   onPick: (player: Player) => void;
   onClose: () => void;
 }) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+
   const groups = POS_ORDER.map((pos) => ({
     pos,
     players: eligible
       .filter((p) => p.pos === pos)
       .sort((a, b) => b.rating - a.rating),
   })).filter((g) => g.players.length > 0);
+
+  // It's a modal: escape closes it, and the tab loop stays inside it.
+  useEffect(() => {
+    const cards = () =>
+      Array.from(sheetRef.current?.querySelectorAll<HTMLElement>("button") ?? []);
+    cards()[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = cards();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
   return (
     <div
@@ -39,7 +71,7 @@ export function PickSheet({
       aria-modal="true"
       aria-label={`Pick a player from ${club} ${decade}`}
     >
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-head">
           <div className="eyebrow">{decade} · pick one for an open slot</div>
           <div className="display" style={{ fontSize: "1.9rem", marginTop: 4 }}>
