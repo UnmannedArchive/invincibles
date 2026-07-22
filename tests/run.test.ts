@@ -35,7 +35,7 @@ describe('eligibleInPool', () => {
     const run = newRun(0);
     const pool = getPool('Arsenal', '2000s');
     const gk = pool.find((p) => p.pos === 'GK')!;
-    const after = applyPick(run, gkSlot(0), gk.id);
+    const after = applyPick(run, GK_SLOT, gk.id);
     const eligible = eligibleInPool(after, pool);
     expect(eligible.find((p) => p.id === gk.id)).toBeUndefined();
   });
@@ -44,7 +44,7 @@ describe('eligibleInPool', () => {
     let run = newRun(0); // 4-3-3 has exactly 1 GK slot
     const pool = getPool('Arsenal', '2000s');
     const gk = pool.find((p) => p.pos === 'GK')!;
-    run = applyPick(run, gkSlot(0), gk.id);
+    run = applyPick(run, GK_SLOT, gk.id);
     // GK slot now filled; no GK from any pool should be eligible
     const otherPool = getPool('Chelsea', '2000s');
     expect(eligibleInPool(run, otherPool).some((p) => p.pos === 'GK')).toBe(false);
@@ -66,7 +66,7 @@ describe('applyPick', () => {
     const run = newRun(0);
     const pool = getPool('Arsenal', '2000s');
     const fw = pool.find((p) => p.pos === 'FW')!;
-    expect(() => applyPick(run, gkSlot(0), fw.id)).toThrow();
+    expect(() => applyPick(run, GK_SLOT, fw.id)).toThrow();
   });
 });
 
@@ -123,9 +123,7 @@ describe('spinPool', () => {
 });
 
 // helpers
-function gkSlot(_n: number): number {
-  return 0; // GK is slot 0 in every formation
-}
+const GK_SLOT = 0; // GK is slot 0 in every formation
 function firstOpen(run: ReturnType<typeof newRun>, pos: Player['pos']): number {
   const formation = getFormation(run.formationId);
   const slot = formation.slots.findIndex((s, i) => s.pos === pos && run.picks[i] === null);
