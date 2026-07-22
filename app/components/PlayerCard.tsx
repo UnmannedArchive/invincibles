@@ -75,6 +75,9 @@ export function MiniCard({ player, position }: { player: Player; position?: stri
           <span className="fut-rating">{player.rating}</span>
           <span className="fut-pos">{position ?? player.pos}</span>
         </span>
+        <span className="fut-mini-badge">
+          <Crest club={player.club} size={13} />
+        </span>
         <span className="fut-name">{displayName(player)}</span>
       </span>
     </span>

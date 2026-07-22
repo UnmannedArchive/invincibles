@@ -106,8 +106,12 @@ export function ResultView({
         </p>
         {manager && (
           <div className="dugout">
-            Managed by <b>{manager.name}</b> · +{manager.attack} att · +
-            {manager.defense} def
+            <span>
+              Managed by <b>{manager.name}</b>
+            </span>
+            <span className="dugout-bonus">
+              +{manager.attack} att · +{manager.defense} def
+            </span>
           </div>
         )}
       </div>
