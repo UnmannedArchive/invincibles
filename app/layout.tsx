@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Archivo, Space_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const anton = Anton({
@@ -19,17 +21,24 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "Spin the eras, draft a full XI from football history, and play a 38-game season. Can your team go Invincible — all the way to a perfect 38-0-0?";
+
 export const metadata: Metadata = {
+  // Share cards are absolute URLs; without this they resolve to localhost.
+  metadataBase: new URL(siteUrl()),
   title: "Invincibles — draft an XI, go the season unbeaten",
-  description:
-    "Spin the eras, draft a full XI from football history, and simulate a 38-game season. Can your team go Invincible — all the way to a perfect 38-0-0?",
+  description: DESCRIPTION,
+  applicationName: "Invincibles",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Invincibles",
-    description:
-      "Spin the eras, draft an XI, go the season unbeaten. Can you reach a perfect 38-0-0?",
+    description: DESCRIPTION,
+    url: "/",
+    siteName: "Invincibles",
     type: "website",
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", title: "Invincibles", description: DESCRIPTION },
 };
 
 export default function RootLayout({
@@ -42,7 +51,12 @@ export default function RootLayout({
       lang="en"
       className={`${anton.variable} ${archivo.variable} ${spaceMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        {/* Only served on Vercel; off-platform it just 404s into the console.
+            Needs Web Analytics enabled for the project to collect anything. */}
+        {process.env.VERCEL === "1" && <Analytics />}
+      </body>
     </html>
   );
 }

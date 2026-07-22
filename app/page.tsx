@@ -8,11 +8,10 @@ import {
   eligibleInPool,
   applyPick,
   isComplete,
-  orderedXI,
   spinPool,
   type RunState,
 } from "@/lib/run";
-import { simulateSeason } from "@/lib/sim";
+import { playRun } from "@/lib/replay";
 import { sharedFromRun, encodeRun } from "@/lib/encode";
 import { mulberry32 } from "@/lib/rng";
 import type { Player, SeasonResult } from "@/lib/types";
@@ -33,7 +32,6 @@ export default function Home() {
   const [spin, setSpin] = useState<PoolKey | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
-  const [seed, setSeed] = useState(0);
   const [result, setResult] = useState<SeasonResult | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -77,16 +75,15 @@ export default function Home() {
     setSheetOpen(false);
   };
 
+  // The season comes from the XI, not from a roll — this exact team always
+  // plays this exact season, for you and for anyone you send it to.
   const playSeason = () => {
-    const s = Math.floor(Math.random() * 0xffffffff) >>> 0;
-    const res = simulateSeason(orderedXI(run), run.formationId, s);
-    setSeed(s);
-    setResult(res);
+    setResult(playRun(run));
     setPhase("reveal");
   };
 
   const share = async () => {
-    const code = encodeRun(sharedFromRun(run, seed));
+    const code = encodeRun(sharedFromRun(run));
     const url = `${window.location.origin}/r/${code}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -215,7 +212,7 @@ function Header() {
   return (
     <header>
       <div className="eyebrow">The unbeaten season</div>
-      <h1 className="wordmark" style={{ fontSize: "clamp(3rem, 17vw, 4.6rem)" }}>
+      <h1 className="wordmark" style={{ fontSize: "clamp(2.5rem, 14vw, 4.2rem)" }}>
         Invinci<span className="go">bles</span>
       </h1>
     </header>
@@ -229,28 +226,12 @@ function LadderKey() {
     ["Perfect", "Win all 38 — the grail"],
   ];
   return (
-    <div className="card" style={{ display: "grid", gap: 8 }}>
+    <div className="card" style={{ display: "grid", gap: 10 }}>
       <div className="eyebrow">The ladder</div>
       {rows.map(([k, v]) => (
-        <div
-          key={k}
-          style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
-        >
-          <span
-            className="display"
-            style={{ fontSize: "1.05rem", color: "var(--gold)" }}
-          >
-            {k}
-          </span>
-          <span
-            style={{
-              color: "var(--chalk-dim)",
-              fontSize: "0.8rem",
-              textAlign: "right",
-            }}
-          >
-            {v}
-          </span>
+        <div key={k} className="ladder-row">
+          <span className="k">{k}</span>
+          <span className="v">{v}</span>
         </div>
       ))}
     </div>
@@ -259,24 +240,7 @@ function LadderKey() {
 
 function Toast({ text }: { text: string }) {
   return (
-    <div
-      role="status"
-      style={{
-        position: "fixed",
-        left: "50%",
-        bottom: 24,
-        transform: "translateX(-50%)",
-        background: "var(--panel-2)",
-        border: "1px solid var(--gold)",
-        color: "var(--chalk)",
-        padding: "12px 18px",
-        borderRadius: 10,
-        fontSize: "0.85rem",
-        zIndex: 50,
-        maxWidth: "90vw",
-        textAlign: "center",
-      }}
-    >
+    <div role="status" className="toast">
       {text}
     </div>
   );

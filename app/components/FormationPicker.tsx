@@ -16,44 +16,18 @@ export function FormationPicker({
   onSelect: (id: number) => void;
 }) {
   return (
-    <div
-      style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}
-    >
-      {FORMATIONS.map((f) => {
-        const active = f.id === selected;
-        return (
-          <button
-            key={f.id}
-            onClick={() => onSelect(f.id)}
-            aria-pressed={active}
-            className="card"
-            style={{
-              padding: "14px 8px",
-              cursor: "pointer",
-              borderColor: active ? "var(--gold)" : "var(--line)",
-              background: active ? "var(--gold-soft)" : "var(--panel)",
-              textAlign: "center",
-            }}
-          >
-            <div
-              className="display"
-              style={{ fontSize: "1.5rem", color: "var(--chalk)" }}
-            >
-              {f.name}
-            </div>
-            <div
-              style={{
-                fontSize: "0.62rem",
-                color: "var(--chalk-dim)",
-                marginTop: 4,
-                lineHeight: 1.2,
-              }}
-            >
-              {SHAPE_NOTE[f.name]}
-            </div>
-          </button>
-        );
-      })}
+    <div className="shapes">
+      {FORMATIONS.map((f) => (
+        <button
+          key={f.id}
+          onClick={() => onSelect(f.id)}
+          aria-pressed={f.id === selected}
+          className="shape"
+        >
+          <span className="n">{f.name}</span>
+          <span className="note">{SHAPE_NOTE[f.name]}</span>
+        </button>
+      ))}
     </div>
   );
 }

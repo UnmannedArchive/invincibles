@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { SeasonResult, Tier } from "@/lib/types";
+import type { SeasonResult, TableRow, Tier } from "@/lib/types";
 import type { RunState } from "@/lib/run";
 import { getFormation } from "@/lib/formations";
 import { Pitch } from "./Pitch";
@@ -28,6 +28,46 @@ function blurb(result: SeasonResult): string {
     default:
       return `Finished ${ordinal(result.position)}. Next time.`;
   }
+}
+
+/** Top of the table, and your own row whether or not it made the cut. */
+function FinalTable({ table }: { table: TableRow[] }) {
+  const yourIndex = table.findIndex((row) => row.isYou);
+  const shown: (TableRow | null)[] =
+    yourIndex < 6
+      ? table.slice(0, 6)
+      : [...table.slice(0, 5), null, table[yourIndex]];
+
+  return (
+    <div className="league">
+      <div className="league-row league-head">
+        <span>Pos</span>
+        <span>Club</span>
+        <span>GD</span>
+        <span>Pts</span>
+      </div>
+      {shown.map((row, i) =>
+        row === null ? (
+          <div key="gap" className="league-gap">
+            ⋯
+          </div>
+        ) : (
+          <div
+            key={row.name + i}
+            className={row.isYou ? "league-row you" : "league-row"}
+          >
+            <span className="data">{table.indexOf(row) + 1}</span>
+            <span className="club">{row.name}</span>
+            <span className="data">
+              {row.goalDiff >= 0 ? "+" : ""}
+              {row.goalDiff}
+            </span>
+            <span className="data pts">{row.points}</span>
+          </div>
+        ),
+      )}
+    </div>
+  );
 }
 
 export function ResultView({
@@ -85,6 +125,8 @@ export function ResultView({
           </div>
         </div>
       </div>
+
+      <FinalTable table={result.table} />
 
       <Pitch run={run} />
 

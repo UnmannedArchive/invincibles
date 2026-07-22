@@ -1,6 +1,7 @@
 import { mulberry32, poisson, type Rng } from './rng';
 import { getFormation } from './formations';
-import type { MatchResult, Player, Pos, SeasonResult, Tier } from './types';
+import { LEAGUE, YOUR_CLUB, opponentName } from './opponents';
+import type { MatchResult, Player, Pos, SeasonResult, TableRow, Tier } from './types';
 
 export interface SimConfig {
   /** league-average expected goals per side per match */
@@ -19,11 +20,8 @@ export const DEFAULT_CONFIG: SimConfig = {
   baseGoals: 0.95,
   ratingScale: 12,
   minXg: 0.48,
-  opponents: [
-    66, 67, 68, 69, 70, 71, // relegation fodder
-    72, 73, 74, 75, 76, 77, 78, 79, 80, 81, // midtable
-    83, 85, 87, // title rivals
-  ],
+  // Six relegation scrappers, ten midtable, three genuine title rivals.
+  opponents: LEAGUE.map((club) => club.strength),
 };
 
 const ATTACK_WEIGHTS: Record<Pos, number> = { FW: 0.5, MF: 0.35, DF: 0.15, GK: 0 };
@@ -95,21 +93,27 @@ export function simulateSeason(
   const { attack, defense } = teamRatings(xi);
   const n = cfg.opponents.length;
 
-  // Our matches, opponents in fixed order so the seed fully determines the season.
-  const matches: MatchResult[] = [];
-  for (const strength of cfg.opponents) {
-    for (let leg = 0; leg < 2; leg++) {
-      const { goalsFor, goalsAgainst } = playMatch(cfg, rng, attack, defense, strength, strength);
-      matches.push({ opponent: strength, goalsFor, goalsAgainst });
-    }
+  // Each opponent twice, shuffled off the same seed: the run of fixtures is
+  // part of the season, and no season ends against the same two title rivals.
+  const fixtures: number[] = [];
+  for (let i = 0; i < n; i++) fixtures.push(i, i);
+  for (let i = fixtures.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [fixtures[i], fixtures[j]] = [fixtures[j], fixtures[i]];
   }
+
+  const matches: MatchResult[] = fixtures.map((opponentIndex) => {
+    const strength = cfg.opponents[opponentIndex];
+    const { goalsFor, goalsAgainst } = playMatch(cfg, rng, attack, defense, strength, strength);
+    return { opponentIndex, goalsFor, goalsAgainst };
+  });
 
   let wins = 0;
   let draws = 0;
   let losses = 0;
   const oppTable = cfg.opponents.map(() => ({ pts: 0, gd: 0, gf: 0 }));
-  matches.forEach((m, idx) => {
-    const opp = oppTable[idx >> 1];
+  matches.forEach((m) => {
+    const opp = oppTable[m.opponentIndex];
     if (m.goalsFor > m.goalsAgainst) {
       wins++;
     } else if (m.goalsFor < m.goalsAgainst) {
@@ -147,17 +151,29 @@ export function simulateSeason(
   const goalsFor = matches.reduce((s, m) => s + m.goalsFor, 0);
   const goalsAgainst = matches.reduce((s, m) => s + m.goalsAgainst, 0);
   const gd = goalsFor - goalsAgainst;
-  // Ties break in our favor: only strictly better opponents rank above us.
-  const position =
-    1 +
-    oppTable.filter(
-      (t) =>
-        t.pts > points ||
-        (t.pts === points && (t.gd > gd || (t.gd === gd && t.gf > goalsFor))),
-    ).length;
+
+  // Ties break in our favour: only strictly better clubs finish above us.
+  const table: TableRow[] = [
+    ...oppTable.map((t, i) => ({
+      name: opponentName(i),
+      points: t.pts,
+      goalsFor: t.gf,
+      goalDiff: t.gd,
+      isYou: false,
+    })),
+    { name: YOUR_CLUB, points, goalsFor, goalDiff: gd, isYou: true },
+  ].sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.goalDiff - a.goalDiff ||
+      b.goalsFor - a.goalsFor ||
+      Number(b.isYou) - Number(a.isYou),
+  );
+  const position = table.findIndex((row) => row.isYou) + 1;
 
   return {
     matches,
+    table,
     wins,
     draws,
     losses,

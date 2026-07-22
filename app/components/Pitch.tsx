@@ -1,6 +1,6 @@
 import { getFormation } from "@/lib/formations";
 import { playerById } from "@/lib/data";
-import { KitToken, shirtNumber, surnameOf } from "./KitToken";
+import { MiniCard } from "./PlayerCard";
 import type { RunState } from "@/lib/run";
 
 function PitchLines() {
@@ -11,10 +11,10 @@ function PitchLines() {
       preserveAspectRatio="none"
       aria-hidden="true"
     >
-      <g fill="none" stroke="rgba(238,242,234,0.5)" strokeWidth="0.4">
+      <g fill="none" stroke="rgba(120, 210, 255, 0.32)" strokeWidth="0.4">
         <line x1="0" y1="52.5" x2="68" y2="52.5" />
         <circle cx="34" cy="52.5" r="9.15" />
-        <circle cx="34" cy="52.5" r="0.6" fill="rgba(238,242,234,0.5)" />
+        <circle cx="34" cy="52.5" r="0.6" fill="rgba(120, 210, 255, 0.32)" />
         {/* top penalty + goal areas */}
         <rect x="13.85" y="0" width="40.3" height="16.5" />
         <rect x="24.85" y="0" width="18.3" height="5.5" />
@@ -26,13 +26,7 @@ function PitchLines() {
   );
 }
 
-export function Pitch({
-  run,
-  highlightSlot,
-}: {
-  run: RunState;
-  highlightSlot?: number | null;
-}) {
+export function Pitch({ run }: { run: RunState }) {
   const formation = getFormation(run.formationId);
   return (
     <div className="pitch" role="img" aria-label="Your XI on the pitch">
@@ -41,31 +35,16 @@ export function Pitch({
         const id = run.picks[i];
         const player = id === null ? null : playerById(id);
         // portrait pitch: attack (high x) sits near the top
-        const top = 100 - slot.x;
-        const left = slot.y;
         return (
           <div
             key={i}
             className={player ? "slot" : "slot slot-empty"}
-            style={{
-              top: `${top}%`,
-              left: `${left}%`,
-              opacity: highlightSlot != null && highlightSlot !== i ? 0.85 : 1,
-            }}
+            style={{ top: `${100 - slot.x}%`, left: `${slot.y}%` }}
           >
             {player ? (
-              <>
-                <KitToken number={shirtNumber(i)} />
-                <span className="surname">{surnameOf(player.name)}</span>
-                <span className="rating data">{player.rating}</span>
-              </>
+              <MiniCard player={player} />
             ) : (
-              <>
-                <div className="kit">
-                  <div className="kit-outline" />
-                </div>
-                <span className="pos-label">{slot.pos}</span>
-              </>
+              <div className="empty-card">{slot.pos}</div>
             )}
           </div>
         );

@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { decodeRun } from "@/lib/encode";
-import { playerById } from "@/lib/data";
-import { simulateSeason } from "@/lib/sim";
-import { getFormation } from "@/lib/formations";
-import type { RunState } from "@/lib/run";
-import type { SeasonResult, Tier } from "@/lib/types";
+import { notFound } from "next/navigation";
+import { replayFromCode } from "@/lib/replay";
+import type { Tier } from "@/lib/types";
 import { ResultView } from "@/app/components/ResultView";
 
 type Params = { params: Promise<{ code: string }> };
+
+// A season is a pure function of its code, so a given URL only ever needs
+// rendering once. Unknown codes are still generated on demand (dynamicParams
+// defaults to true) and then cached alongside the rest.
+export const dynamic = "force-static";
 
 const TIER_TITLE: Record<Tier, string> = {
   perfect: "a PERFECT 38-0-0",
@@ -17,79 +19,44 @@ const TIER_TITLE: Record<Tier, string> = {
   none: "a season",
 };
 
-// Rebuild a run + season from a share code, or null if the code is unreadable.
-function decodeSeason(
-  code: string,
-): { run: RunState; result: SeasonResult } | null {
-  try {
-    const shared = decodeRun(code);
-    getFormation(shared.formationId); // throws on bad formation id
-    const xi = shared.playerIds.map((id) => {
-      const p = playerById(id);
-      if (!p) throw new Error("unknown player");
-      return p;
-    });
-    const run: RunState = {
-      formationId: shared.formationId,
-      picks: shared.playerIds,
-    };
-    const result = simulateSeason(xi, shared.formationId, shared.seed);
-    return { run, result };
-  } catch {
-    return null;
-  }
-}
-
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { code } = await params;
-  const decoded = decodeSeason(code);
-  if (!decoded) {
-    return { title: "Invincibles" };
-  }
-  const { result } = decoded;
+  const replay = replayFromCode(code);
+  if (!replay) return { title: "Invincibles" };
+
+  const { result } = replay;
   const title = `Invincibles — ${TIER_TITLE[result.tier]} (${result.wins}W ${result.draws}D ${result.losses}L)`;
+  const description = `${result.wins} wins, ${result.draws} draws, ${result.losses} losses across 38 games. Think you can do better?`;
   const image = `/api/og?code=${encodeURIComponent(code)}`;
+
   return {
     title,
+    description,
+    alternates: { canonical: `/r/${code}` },
     openGraph: {
       title,
-      description: `${result.wins} wins, ${result.draws} draws, ${result.losses} losses across 38 games. Think you can do better?`,
+      description,
+      url: `/r/${code}`,
       images: [{ url: image, width: 1200, height: 630 }],
       type: "website",
     },
-    twitter: { card: "summary_large_image", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
 export default async function SharedRunPage({ params }: Params) {
   const { code } = await params;
-  const decoded = decodeSeason(code);
+  const replay = replayFromCode(code);
+  if (!replay) notFound();
 
-  if (!decoded) {
-    return (
-      <main className="shell" style={{ justifyContent: "center", gap: 16 }}>
-        <h1 className="wordmark" style={{ fontSize: "3rem" }}>
-          Invinci<span className="go">bles</span>
-        </h1>
-        <p style={{ color: "var(--chalk-dim)" }}>
-          This season link couldn&rsquo;t be read. It may be from a newer
-          version of the game.
-        </p>
-        <Link className="btn" href="/" style={{ textAlign: "center" }}>
-          Draft your own
-        </Link>
-      </main>
-    );
-  }
-
-  const { run, result } = decoded;
+  const { run, result } = replay;
   return (
     <main className="shell">
       <header>
         <div className="eyebrow">A shared season</div>
         <h1
           className="wordmark"
-          style={{ fontSize: "clamp(2.6rem, 15vw, 4rem)" }}
+          style={{ fontSize: "clamp(2.4rem, 13.5vw, 3.8rem)" }}
         >
           Invinci<span className="go">bles</span>
         </h1>

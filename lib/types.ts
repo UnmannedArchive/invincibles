@@ -23,15 +23,25 @@ export interface Formation {
 }
 
 export interface MatchResult {
-  opponent: number; // opponent strength rating
+  opponentIndex: number; // index into the league (see lib/opponents.ts)
   goalsFor: number;
   goalsAgainst: number;
 }
 
 export type Tier = 'none' | 'champions' | 'invincible' | 'perfect';
 
+export interface TableRow {
+  name: string;
+  points: number;
+  goalsFor: number;
+  goalDiff: number;
+  isYou: boolean;
+}
+
 export interface SeasonResult {
   matches: MatchResult[];
+  /** final league table, best first */
+  table: TableRow[];
   wins: number;
   draws: number;
   losses: number;

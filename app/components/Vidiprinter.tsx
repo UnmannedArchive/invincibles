@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { YOUR_CLUB, opponentName } from "@/lib/opponents";
 import type { SeasonResult } from "@/lib/types";
 
 type Outcome = "win" | "draw" | "loss";
@@ -49,6 +50,7 @@ export function Vidiprinter({
     feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight });
   }, [shown]);
 
+  const done = shown >= result.matches.length;
   const visible = result.matches.slice(0, shown);
   let w = 0,
     d = 0,
@@ -79,11 +81,11 @@ export function Vidiprinter({
             return (
               <div key={i} className={`vidi-line ${o}`}>
                 <span className="res">{LETTER[o]}</span>
-                <span>Invincibles</span>
+                <span className="home">{YOUR_CLUB}</span>
                 <span className="score">
                   {m.goalsFor}–{m.goalsAgainst}
                 </span>
-                <span style={{ opacity: 0.55 }}>opp {m.opponent}</span>
+                <span className="opp">{opponentName(m.opponentIndex)}</span>
               </div>
             );
           })}
@@ -107,6 +109,15 @@ export function Vidiprinter({
           <div className="v">{w * 3 + d}</div>
         </div>
       </div>
+      {!done && (
+        <button
+          className="btn btn-ghost"
+          style={{ marginTop: 12 }}
+          onClick={() => setShown(result.matches.length)}
+        >
+          Skip to the table
+        </button>
+      )}
     </div>
   );
 }

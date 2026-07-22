@@ -96,3 +96,64 @@ describe('computeTier', () => {
     expect(computeTier(15, 10, 13, 8)).toBe('none');
   });
 });
+
+describe('the fixture list', () => {
+  test('faces every opponent home and away', () => {
+    const r = simulateSeason(xiFor(0, 85), 0, 99);
+    const counts = new Map<number, number>();
+    for (const m of r.matches) counts.set(m.opponentIndex, (counts.get(m.opponentIndex) ?? 0) + 1);
+    expect(counts.size).toBe(19);
+    for (const n of counts.values()) expect(n).toBe(2);
+  });
+
+  // Fixtures used to run weakest-to-strongest, so every season ended against
+  // the same two title rivals and the reveal was predictable.
+  test('is ordered by the seed, not by opponent strength', () => {
+    const a = simulateSeason(xiFor(0, 85), 0, 1).matches.map((m) => m.opponentIndex);
+    const b = simulateSeason(xiFor(0, 85), 0, 2).matches.map((m) => m.opponentIndex);
+    expect(a).not.toEqual(b);
+    expect(a).not.toEqual([...a].sort((x, y) => x - y));
+  });
+});
+
+describe('the final table', () => {
+  test('has a row for every club plus you', () => {
+    const r = simulateSeason(xiFor(0, 88), 0, 7);
+    expect(r.table).toHaveLength(20);
+    expect(r.table.filter((row) => row.isYou)).toHaveLength(1);
+  });
+
+  test('is sorted by points, then goal difference, then goals scored', () => {
+    const r = simulateSeason(xiFor(0, 88), 0, 7);
+    for (let i = 1; i < r.table.length; i++) {
+      const above = r.table[i - 1];
+      const below = r.table[i];
+      const ordered =
+        above.points > below.points ||
+        (above.points === below.points &&
+          (above.goalDiff > below.goalDiff ||
+            (above.goalDiff === below.goalDiff && above.goalsFor >= below.goalsFor)));
+      expect(ordered).toBe(true);
+    }
+  });
+
+  test('puts you at your league position', () => {
+    for (const seed of [3, 44, 512]) {
+      const r = simulateSeason(xiFor(1, 84), 1, seed);
+      expect(r.table[r.position - 1].isYou).toBe(true);
+    }
+  });
+
+  test('reports your row with the same record as the season', () => {
+    const r = simulateSeason(xiFor(0, 90), 0, 21);
+    const you = r.table.find((row) => row.isYou)!;
+    expect(you.points).toBe(r.points);
+    expect(you.goalsFor).toBe(r.goalsFor);
+    expect(you.goalDiff).toBe(r.goalsFor - r.goalsAgainst);
+  });
+
+  test('names the opposition', () => {
+    const r = simulateSeason(xiFor(0, 85), 0, 5);
+    for (const row of r.table) expect(row.name.length).toBeGreaterThan(2);
+  });
+});

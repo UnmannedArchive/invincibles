@@ -4,12 +4,14 @@ import { orderedXI } from './run';
 export interface SharedRun {
   formationId: number;
   playerIds: number[]; // 11, in slot order
-  seed: number; // u32
 }
 
-const VERSION = 1;
-// version(1) + formation(1) + 11 * playerId(2) + seed(4)
-const BYTE_LENGTH = 1 + 1 + 11 * 2 + 4;
+// v2 dropped the seed: it is derived from the XI (see lib/seed.ts) so that a
+// link cannot carry a hand-picked season. v1 codes are a different length and
+// are rejected rather than reinterpreted.
+const VERSION = 2;
+// version(1) + formation(1) + 11 * playerId(2)
+const BYTE_LENGTH = 1 + 1 + 11 * 2;
 
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
@@ -57,7 +59,6 @@ export function encodeRun(shared: SharedRun): string {
   view.setUint8(0, VERSION);
   view.setUint8(1, shared.formationId);
   shared.playerIds.forEach((id, i) => view.setUint16(2 + i * 2, id));
-  view.setUint32(2 + 22, shared.seed >>> 0);
   return bytesToBase64url(buf);
 }
 
@@ -69,14 +70,12 @@ export function decodeRun(code: string): SharedRun {
   if (view.getUint8(0) !== VERSION) throw new Error('Unsupported code version');
   const formationId = view.getUint8(1);
   const playerIds = Array.from({ length: 11 }, (_, i) => view.getUint16(2 + i * 2));
-  const seed = view.getUint32(2 + 22);
-  return { formationId, playerIds, seed };
+  return { formationId, playerIds };
 }
 
-export function sharedFromRun(run: RunState, seed: number): SharedRun {
+export function sharedFromRun(run: RunState): SharedRun {
   return {
     formationId: run.formationId,
     playerIds: orderedXI(run).map((p) => p.id),
-    seed: seed >>> 0,
   };
 }

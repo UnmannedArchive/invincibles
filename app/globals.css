@@ -1,32 +1,57 @@
 @import "tailwindcss";
 
-/* ---- Invincibles design tokens ---------------------------------------- */
+/* ---- Invincibles design tokens -----------------------------------------
+   Shaped after the FUT-era FIFA menus (20–23): near-black navy, glassy
+   panels, one electric gradient, and rating-tier card colours doing the
+   heavy lifting. Green is reserved for the pitch itself.
+------------------------------------------------------------------------- */
 :root {
-  --bg: #0c1712;
-  --panel: #12211a;
-  --panel-2: #16291f;
-  --line: #294b39;
-  --turf-a: #1c6b3a;
-  --turf-b: #185c31;
-  --chalk: #eef2ea;
-  --chalk-dim: #9db0a2;
-  --gold: #e6b24c;
-  --gold-soft: rgba(230, 178, 76, 0.14);
-  --claret: #c14f37;
-  --crt-bg: #06170d;
-  --crt-amber: #f4c430;
-  --crt-green: #57d98a;
+  --void: #05070e;
+  --deep: #0a1020;
+  --panel: rgba(17, 26, 48, 0.82);
+  --panel-solid: #111a30;
+  --raise: rgba(255, 255, 255, 0.06);
+  --line: rgba(120, 170, 235, 0.18);
+  --line-strong: rgba(120, 210, 255, 0.45);
+
+  --ice: #12e5ff;
+  --violet: #7a3bff;
+  --fuchsia: #ff2e7e;
+  --volt: #c6ff3d;
+
+  --chalk: #eef4ff;
+  --chalk-dim: #8ea3c4;
+  --chalk-faint: rgba(142, 163, 196, 0.45);
+
+  --gold: #f3c55a;
+  --silver: #c9d4e2;
+  --bronze: #cd8b53;
+  --claret: #ff4d5e;
+
+  --grad: linear-gradient(112deg, var(--ice) 0%, var(--violet) 52%, var(--fuchsia) 100%);
+  --grad-soft: linear-gradient(
+    112deg,
+    rgba(18, 229, 255, 0.16) 0%,
+    rgba(122, 59, 255, 0.16) 52%,
+    rgba(255, 46, 126, 0.16) 100%
+  );
+
+  --turf-a: #0f2a1e;
+  --turf-b: #0c2419;
 
   --font-display: var(--font-display), "Arial Narrow", sans-serif;
   --font-ui: var(--font-ui), system-ui, sans-serif;
   --font-data: var(--font-data), ui-monospace, monospace;
+
+  /* the notch that runs through the whole UI */
+  --notch: 10px;
 }
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
+  --color-bg: var(--void);
+  --color-panel: var(--panel-solid);
   --color-chalk: var(--chalk);
-  --color-gold: var(--gold);
+  --color-ice: var(--ice);
 }
 
 * {
@@ -34,15 +59,15 @@
 }
 
 body {
-  background: var(--bg);
+  background: var(--void);
   color: var(--chalk);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
-  background-image: radial-gradient(
-    120% 60% at 50% -10%,
-    rgba(120, 200, 150, 0.08),
-    transparent 60%
-  );
+  background-image:
+    radial-gradient(90% 55% at 12% -8%, rgba(18, 229, 255, 0.16), transparent 62%),
+    radial-gradient(80% 50% at 92% 4%, rgba(255, 46, 126, 0.12), transparent 60%),
+    linear-gradient(180deg, #070c18 0%, var(--void) 46%);
+  background-attachment: fixed;
 }
 
 /* ---- Typographic primitives ------------------------------------------- */
@@ -59,10 +84,11 @@ body {
 }
 .eyebrow {
   font-family: var(--font-data);
-  font-size: 0.7rem;
-  letter-spacing: 0.28em;
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--chalk-dim);
+  color: var(--ice);
+  opacity: 0.85;
 }
 
 /* ---- App shell -------------------------------------------------------- */
@@ -70,7 +96,7 @@ body {
   width: 100%;
   max-width: 460px;
   margin: 0 auto;
-  padding: 20px 18px 40px;
+  padding: 20px 18px 44px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -79,84 +105,336 @@ body {
 .wordmark {
   font-family: var(--font-display);
   text-transform: uppercase;
-  color: var(--chalk);
-  line-height: 0.86;
-  letter-spacing: 0.005em;
+  line-height: 0.84;
+  /* the fallback face is wider than Anton — keep the mark on one line either way */
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  background: linear-gradient(96deg, var(--chalk) 18%, var(--ice) 52%, var(--violet) 88%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .wordmark .go {
-  color: var(--gold);
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* ---- Buttons ---------------------------------------------------------- */
 .btn {
+  position: relative;
   font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-size: 1.4rem;
+  letter-spacing: 0.045em;
+  font-size: 1.35rem;
   border: none;
-  border-radius: 12px;
-  padding: 16px 22px;
+  padding: 17px 22px;
   width: 100%;
   cursor: pointer;
-  transition: transform 0.08s ease, filter 0.15s ease;
-  color: var(--bg);
-  background: var(--gold);
+  color: #05070e;
+  background: var(--grad);
+  clip-path: polygon(
+    var(--notch) 0,
+    100% 0,
+    100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%,
+    0 100%,
+    0 var(--notch)
+  );
+  transition: filter 0.15s ease, transform 0.08s ease;
 }
 .btn:hover {
-  filter: brightness(1.06);
+  filter: brightness(1.12) saturate(1.05);
 }
 .btn:active {
-  transform: translateY(1px) scale(0.995);
+  transform: translateY(1px);
 }
 .btn:disabled {
-  opacity: 0.4;
+  filter: grayscale(0.7) brightness(0.7);
   cursor: not-allowed;
 }
 .btn-ghost {
-  background: transparent;
+  background: rgba(18, 229, 255, 0.07);
   color: var(--chalk);
-  border: 1.5px solid var(--line);
-  font-size: 1rem;
+  border: 1px solid var(--line-strong);
+  font-size: 0.95rem;
   padding: 13px 18px;
 }
 .btn-ghost:hover {
+  background: rgba(18, 229, 255, 0.13);
   filter: none;
-  border-color: var(--chalk-dim);
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline: 2px solid var(--ice);
+  outline-offset: 3px;
+}
+
+/* ---- Panels ----------------------------------------------------------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 var(--raise);
+}
+
+/* ---- Formation picker (segmented) ------------------------------------- */
+.shapes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: rgba(10, 16, 32, 0.7);
+  border: 1px solid var(--line);
+  padding: 6px;
+}
+.shape {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--chalk-dim);
+  padding: 12px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.shape .n {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  display: block;
+  color: inherit;
+}
+.shape .note {
+  font-size: 0.6rem;
+  line-height: 1.25;
+  display: block;
+  margin-top: 4px;
+  color: var(--chalk-faint);
+}
+.shape[aria-pressed="true"] {
+  background: var(--grad-soft);
+  border-color: var(--line-strong);
+  color: var(--chalk);
+}
+.shape[aria-pressed="true"] .note {
+  color: var(--chalk-dim);
+}
+
+/* ---- Player card (the signature element) ------------------------------
+   A Team-of-the-Year silhouette: tapered shield, metallic frame, rating and
+   position stacked top-left, name band, six face stats. Tier comes from the
+   rating — 90+ TOTY, 85+ gold, 80+ silver, below that bronze — and drives
+   the frame, the type and the shard colour through one --tier variable.
+------------------------------------------------------------------------- */
+.fut {
+  --tier: var(--silver);
+  --tier-2: #8f9dae;
+  --tier-glow: rgba(201, 212, 226, 0.18);
+  --shape: polygon(6% 0, 94% 0, 100% 5%, 100% 86%, 50% 100%, 0 86%, 0 5%);
+
+  position: relative;
+  display: block;
+  padding: 2px;
+  border: none;
+  background: linear-gradient(150deg, var(--tier) 0%, var(--tier-2) 46%, var(--tier) 100%);
+  clip-path: var(--shape);
+  color: var(--tier);
+}
+.fut-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  clip-path: var(--shape);
+  background:
+    linear-gradient(158deg, var(--tier-glow) 0%, transparent 58%),
+    linear-gradient(180deg, #0d1834 0%, #060a16 100%);
+  overflow: hidden;
+}
+.fut-toty {
+  --tier: #f0cf7d;
+  --tier-2: #b3873a;
+  --tier-glow: rgba(240, 207, 125, 0.3);
+  box-shadow: 0 0 22px rgba(240, 207, 125, 0.2);
+}
+.fut-gold {
+  --tier: var(--gold);
+  --tier-2: #a97f2f;
+  --tier-glow: rgba(243, 197, 90, 0.18);
+}
+.fut-silver {
+  --tier: var(--silver);
+  --tier-2: #8f9dae;
+  --tier-glow: rgba(201, 212, 226, 0.16);
+}
+.fut-bronze {
+  --tier: var(--bronze);
+  --tier-2: #8d5c34;
+  --tier-glow: rgba(205, 139, 83, 0.18);
+}
+
+.fut-head {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.fut-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.fut-rating {
+  font-family: var(--font-display);
+  color: var(--tier);
+}
+.fut-pos {
+  font-family: var(--font-data);
+  color: var(--tier);
+  letter-spacing: 0.06em;
+}
+.fut-rule {
+  display: block;
+  width: 60%;
+  height: 1px;
+  background: color-mix(in srgb, var(--tier) 55%, transparent);
+  margin: 5px 0;
+}
+.fut-era,
+.fut-badge {
+  font-family: var(--font-data);
+  color: var(--chalk-dim);
+  letter-spacing: 0.04em;
+}
+.fut-shards {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  color: var(--tier);
+  pointer-events: none;
+}
+.fut-name {
+  font-family: var(--font-display);
+  text-align: center;
+  color: var(--tier);
+  letter-spacing: 0.04em;
+  border-top: 1px solid color-mix(in srgb, var(--tier) 45%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fut-attrs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
+  row-gap: 2px;
+  font-family: var(--font-data);
+  color: var(--chalk-dim);
+  border-top: 1px solid color-mix(in srgb, var(--tier) 30%, transparent);
+}
+.fut-attr b {
+  color: var(--tier);
+  font-weight: 700;
+}
+
+/* pick-sheet sized */
+.fut-lg {
+  width: 100%;
+  height: 214px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+.fut-lg:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+}
+.fut-lg .fut-head {
+  padding: 12px 10px 0 12px;
+}
+.fut-lg .fut-rating {
+  font-size: 2.15rem;
+}
+.fut-lg .fut-pos {
+  font-size: 0.72rem;
+  margin-top: 2px;
+}
+.fut-lg .fut-era {
+  font-size: 0.6rem;
+}
+.fut-lg .fut-badge {
+  font-size: 0.62rem;
+  margin-top: 5px;
+  padding: 2px 5px;
+  border: 1px solid color-mix(in srgb, var(--tier) 40%, transparent);
+}
+.fut-lg .fut-name {
+  font-size: 0.98rem;
+  padding: 6px 6px 5px;
+  margin-top: 6px;
+}
+.fut-lg .fut-attrs {
+  font-size: 0.63rem;
+  padding: 6px 12px 20px;
+}
+
+/* pitch sized */
+.fut-sm {
+  width: 60px;
+  height: 72px;
+}
+.fut-sm .fut-body {
+  justify-content: space-between;
+}
+.fut-sm .fut-stat {
+  align-items: flex-start;
+  padding: 4px 0 0 6px;
+}
+.fut-sm .fut-rating {
+  font-size: 1.2rem;
+}
+.fut-sm .fut-pos {
+  font-size: 0.5rem;
+}
+.fut-sm .fut-name {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 0.47rem;
+  letter-spacing: -0.02em;
+  padding: 2px 2px 9px;
+  color: var(--chalk);
 }
 
 /* ---- Split-flap spin board -------------------------------------------- */
 .flapboard {
-  background: #08120c;
+  background: linear-gradient(180deg, #060b16, #04070f);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px 14px;
+  border-radius: 3px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: inset 0 2px 18px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(18, 229, 255, 0.05);
 }
 .flap-row {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   justify-content: center;
 }
 .flap {
   font-family: var(--font-data);
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   width: 1.05em;
   height: 1.5em;
   line-height: 1.5em;
   text-align: center;
   color: var(--chalk);
-  background: linear-gradient(#1a1a1a, #101010);
-  border-radius: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(#151d33, #0b1120);
+  border-radius: 3px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
   position: relative;
   overflow: hidden;
 }
@@ -167,7 +445,7 @@ body {
   right: 0;
   top: 50%;
   height: 1px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
 }
 .flap.settling {
   animation: flapflip 0.16s ease-in-out;
@@ -183,7 +461,7 @@ body {
   }
 }
 .flap-decade {
-  color: var(--gold);
+  color: var(--ice);
 }
 
 /* ---- Pitch ------------------------------------------------------------ */
@@ -191,13 +469,12 @@ body {
   position: relative;
   width: 100%;
   aspect-ratio: 68 / 105;
-  border-radius: 14px;
+  border-radius: 4px;
   overflow: hidden;
-  background: repeating-linear-gradient(
-    var(--turf-a) 0 9.09%,
-    var(--turf-b) 9.09% 18.18%
-  );
-  border: 1px solid rgba(238, 242, 234, 0.22);
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(18, 229, 255, 0.09), transparent 60%),
+    repeating-linear-gradient(var(--turf-a) 0 9.09%, var(--turf-b) 9.09% 18.18%);
+  border: 1px solid var(--line);
 }
 .pitch-lines {
   position: absolute;
@@ -210,71 +487,26 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 62px;
+  width: 60px;
 }
-
-/* ---- Kit token (back of a shirt) -------------------------------------- */
-.kit {
-  position: relative;
-  width: 46px;
-  height: 44px;
+.slot-empty .empty-card {
+  width: 60px;
+  height: 72px;
+  border: 1.5px dashed rgba(142, 163, 196, 0.4);
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
-}
-.kit svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.kit .num {
-  position: relative;
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  color: #10231a;
-  z-index: 1;
-}
-.slot .surname {
-  margin-top: 3px;
   font-family: var(--font-data);
-  font-weight: 700;
-  font-size: 0.6rem;
-  letter-spacing: 0.02em;
-  color: var(--chalk);
-  text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-  max-width: 62px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.slot .rating {
-  font-family: var(--font-data);
-  font-size: 0.55rem;
-  color: var(--gold);
-}
-.slot-empty .kit {
-  filter: none;
-}
-.slot-empty .kit-outline {
-  width: 42px;
-  height: 40px;
-  border: 1.5px dashed rgba(238, 242, 234, 0.4);
-  border-radius: 8px 8px 10px 10px;
-}
-.slot-empty .pos-label {
-  margin-top: 3px;
-  font-family: var(--font-data);
-  font-size: 0.6rem;
-  color: rgba(238, 242, 234, 0.55);
+  font-size: 0.62rem;
+  color: rgba(142, 163, 196, 0.7);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
 }
 
 /* ---- Pick sheet ------------------------------------------------------- */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 10, 7, 0.72);
+  background: rgba(3, 6, 14, 0.78);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -289,11 +521,9 @@ body {
 .sheet {
   width: 100%;
   max-width: 460px;
-  background: var(--panel);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  border-top: 1px solid var(--line);
-  max-height: 82vh;
+  background: linear-gradient(180deg, #0d1526 0%, #070c18 100%);
+  border-top: 1px solid var(--line-strong);
+  max-height: 84vh;
   display: flex;
   flex-direction: column;
   animation: slideup 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
@@ -304,85 +534,54 @@ body {
   }
 }
 .sheet-head {
-  padding: 16px 18px 10px;
+  padding: 16px 18px 12px;
   border-bottom: 1px solid var(--line);
+  background: var(--grad-soft);
 }
 .sheet-scroll {
   overflow-y: auto;
-  padding: 8px 12px 22px;
+  padding: 10px 14px 24px;
 }
 .pos-heading {
   font-family: var(--font-data);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.22em;
   color: var(--chalk-dim);
   text-transform: uppercase;
-  padding: 12px 6px 6px;
+  padding: 14px 2px 8px;
 }
-.player-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 11px 12px;
-  border-radius: 10px;
-  background: var(--panel-2);
-  border: 1px solid transparent;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.12s ease, background 0.12s ease;
-}
-.player-row + .player-row {
-  margin-top: 6px;
-}
-.player-row:hover {
-  border-color: var(--gold);
-}
-.player-row .pname {
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--chalk);
-}
-.player-row .pmeta {
-  font-family: var(--font-data);
-  font-size: 0.7rem;
-  color: var(--chalk-dim);
-}
-.player-row .prating {
-  margin-left: auto;
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  color: var(--gold);
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
 /* ---- Vidiprinter (season reveal) -------------------------------------- */
 .vidi {
-  background: var(--crt-bg);
-  border: 1px solid #14351f;
-  border-radius: 12px;
+  background: linear-gradient(180deg, #060c17, #04070f);
+  border: 1px solid var(--line);
+  border-radius: 3px;
   padding: 14px 14px 16px;
   font-family: var(--font-data);
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.75);
   position: relative;
 }
 .vidi::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 12px;
   pointer-events: none;
   background: repeating-linear-gradient(
-    rgba(255, 255, 255, 0.03) 0 1px,
+    rgba(255, 255, 255, 0.025) 0 1px,
     transparent 1px 3px
   );
 }
 .vidi-head {
-  color: var(--crt-green);
-  font-size: 0.7rem;
+  color: var(--ice);
+  font-size: 0.68rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  border-bottom: 1px dashed #1f4a2e;
+  border-bottom: 1px solid var(--line);
   padding-bottom: 8px;
   margin-bottom: 8px;
   display: flex;
@@ -393,10 +592,10 @@ body {
   flex-direction: column;
   gap: 3px;
   min-height: 220px;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
 }
 .vidi-line {
-  color: var(--crt-amber);
+  color: var(--chalk-dim);
   display: flex;
   gap: 8px;
   animation: typein 0.18s ease;
@@ -412,7 +611,7 @@ body {
   font-weight: 700;
 }
 .vidi-line.win .res {
-  color: var(--crt-green);
+  color: var(--volt);
 }
 .vidi-line.draw .res {
   color: var(--chalk-dim);
@@ -420,33 +619,43 @@ body {
 .vidi-line.loss .res {
   color: var(--claret);
 }
-.vidi-line .score {
+.vidi-line .home {
   color: var(--chalk);
 }
+.vidi-line .score {
+  color: var(--chalk);
+  font-weight: 700;
+}
+.vidi-line .home,
+.vidi-line .opp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-/* ---- Tally + tables --------------------------------------------------- */
+/* ---- Tally ------------------------------------------------------------ */
 .tally {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 14px;
+  gap: 6px;
+  margin-top: 12px;
 }
 .tally .cell {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 10px;
   padding: 10px 4px;
   text-align: center;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
 }
 .tally .k {
   font-family: var(--font-data);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.16em;
   color: var(--chalk-dim);
 }
 .tally .v {
   font-family: var(--font-display);
-  font-size: 1.9rem;
+  font-size: 1.85rem;
   line-height: 1;
   margin-top: 4px;
 }
@@ -457,19 +666,33 @@ body {
 /* ---- Result verdict --------------------------------------------------- */
 .verdict {
   text-align: center;
-  padding: 8px 0 4px;
+  padding: 18px 12px 16px;
+  border: 1px solid var(--line-strong);
+  background: var(--grad-soft);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    0 100%
+  );
 }
 .verdict .tier {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 13vw, 3.8rem);
+  font-size: clamp(2.7rem, 14vw, 4rem);
   line-height: 0.9;
+  margin-top: 6px;
 }
 .tier-perfect {
-  color: var(--gold);
-  text-shadow: 0 0 24px rgba(230, 178, 76, 0.4);
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(18, 229, 255, 0.35));
 }
 .tier-invincible {
   color: var(--gold);
+  text-shadow: 0 0 22px rgba(243, 197, 90, 0.35);
 }
 .tier-champions {
   color: var(--chalk);
@@ -479,16 +702,94 @@ body {
 }
 .record-line {
   font-family: var(--font-data);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--chalk);
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
-.card {
+/* ---- Final league table ----------------------------------------------- */
+.league {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
+  padding: 6px 10px 10px;
+  backdrop-filter: blur(8px);
+}
+.league-row {
+  display: grid;
+  grid-template-columns: 2.1em 1fr 3em 2.6em;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 6px;
+  font-size: 0.84rem;
+}
+.league-row + .league-row {
+  border-top: 1px solid rgba(120, 170, 235, 0.1);
+}
+.league-head {
+  font-family: var(--font-data);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+  padding-bottom: 4px;
+}
+.league-row .club {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.league-row .pts {
+  font-weight: 700;
+  text-align: right;
+}
+.league-row.you {
+  background: var(--grad-soft);
+  border: 1px solid var(--line-strong);
+  color: var(--chalk);
+}
+.league-row.you .club {
+  font-weight: 700;
+  color: var(--ice);
+}
+.league-gap {
+  text-align: center;
+  color: var(--chalk-faint);
+  font-size: 0.8rem;
+  padding: 2px 0;
+}
+
+/* ---- Ladder key ------------------------------------------------------- */
+.ladder-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+.ladder-row .k {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+.ladder-row .v {
+  color: var(--chalk-dim);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+/* ---- Toast ------------------------------------------------------------ */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--panel-solid);
+  border: 1px solid var(--line-strong);
+  color: var(--chalk);
+  padding: 12px 18px;
+  font-size: 0.85rem;
+  z-index: 50;
+  max-width: 90vw;
+  text-align: center;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -497,5 +798,6 @@ body {
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

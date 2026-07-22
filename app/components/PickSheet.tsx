@@ -1,5 +1,6 @@
 "use client";
 
+import { PlayerCard } from "./PlayerCard";
 import type { Player, Pos } from "@/lib/types";
 
 const POS_ORDER: Pos[] = ["GK", "DF", "MF", "FW"];
@@ -41,30 +42,19 @@ export function PickSheet({
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="sheet-head">
           <div className="eyebrow">{decade} · pick one for an open slot</div>
-          <div
-            className="display"
-            style={{ fontSize: "1.9rem", marginTop: 4 }}
-          >
+          <div className="display" style={{ fontSize: "1.9rem", marginTop: 4 }}>
             {club}
           </div>
         </div>
         <div className="sheet-scroll">
           {groups.map((g) => (
-            <div key={g.pos} className="pos-group">
+            <div key={g.pos}>
               <div className="pos-heading">{POS_LABEL[g.pos]}</div>
-              {g.players.map((p) => (
-                <button
-                  key={p.id}
-                  className="player-row"
-                  onClick={() => onPick(p)}
-                >
-                  <div>
-                    <div className="pname">{p.name}</div>
-                    <div className="pmeta">{p.pos}</div>
-                  </div>
-                  <div className="prating">{p.rating}</div>
-                </button>
-              ))}
+              <div className="card-grid">
+                {g.players.map((p) => (
+                  <PlayerCard key={p.id} player={p} onPick={onPick} />
+                ))}
+              </div>
             </div>
           ))}
         </div>
