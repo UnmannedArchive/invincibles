@@ -8,6 +8,9 @@ The game is complete and honest now: you draft an XI, it plays one season it can
 
 ## 1. Give the draft a decision to make — chemistry
 
+> **Deferred — Joseph's call, 2026-07-22.** Not being built for now. Leaving the reasoning below intact so the case is here when it's wanted.
+
+
 **The problem:** right now there is no choice. Every spin, you take the highest-rated eligible player, and that is always correct. The pick sheet sorts by rating, so the right answer is literally the first card. Eleven spins of picking the top card is a slot machine, not a draft.
 
 **The fix, and it's the FIFA one:** chemistry links. A pick that shares a club or a decade with players you already have is worth more than its rating suggests. Suddenly the 84 from the same club as your back line beats the 88 from nowhere, and every spin is a real trade.
