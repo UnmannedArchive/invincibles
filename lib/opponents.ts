@@ -38,7 +38,3 @@ export const YOUR_CLUB = 'Invincibles';
 export function opponentName(index: number): string {
   return LEAGUE[index]?.name ?? `Club ${index + 1}`;
 }
-
-export function opponentShort(index: number): string {
-  return LEAGUE[index]?.short ?? String(index + 1).padStart(3, '0');
-}

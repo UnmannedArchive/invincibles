@@ -2,7 +2,9 @@
 
 A soccer take on [82-0](https://82-0.com). Spin the eras, draft an XI out of football history one player at a time, then play a 38-game season and find out whether it holds up unbeaten.
 
-The loop is deliberately the same as the original: pick a formation, spin, get a club × decade, take exactly one player from that pool into an open slot, repeat eleven times. No re-spins, no takebacks. Picked players disappear from later pools, so a spin that lands on the same club twice is not a free pass.
+The loop is 82-0's spin crossed with a FUT online draft. Pick a formation, then fill the team sheet in order — keeper, back line, midfield, front line. Each spin lands on a club × decade and offers you only the players who can play the position you're on, so you're picking *a left-back from Milan in the 80s*, not whoever happens to be best. Eleven picks, no re-spins, no takebacks, and picked players disappear from later pools.
+
+Then you appoint a manager. Thirty of them across the eras, each with a touchline style worth a few rating points at one end of the pitch or the other, and the season kicks off the moment you choose.
 
 Three tiers to chase:
 
@@ -26,7 +28,9 @@ Shaped after the FUT-era FIFA menus (20–23): near-black navy, glassy panels, o
 
 The signature element is the player card. Every player renders as a Team-of-the-Year-style card — tapered shield, metallic frame, rating and position stacked top-left, name band, six face stats. Tier comes from the rating and is cut to this dataset rather than to FUT's thresholds: ratings here run 70–98 with a median of 81, so 90+ is TOTY (about 5% of the pool), 85+ gold, 80+ silver, and the rest bronze. Pulling a 90 out of a spin should feel like pulling a TOTY.
 
-The six face stats don't exist in the data — the dataset rates a player overall and nothing else. They're spread from that overall by position and jittered deterministically off the player id, so a card looks identical everywhere it appears but isn't claiming to know anyone's real pace. There are still no crests, no photos and no likenesses; the crest slot carries a club monogram instead.
+The six face stats don't exist in the data — the dataset rates a player overall and nothing else. They're spread from that overall by position and jittered deterministically off the player id, so a card looks identical everywhere it appears but isn't claiming to know anyone's real pace. Keepers get keeper stats (DIV/HAN/KIC/REF/SPD/POS).
+
+**No crests, no logos, no photos.** Club badges and league marks are trademarked artwork and this project has no licence for them. What the cards carry instead is drawn from facts about a club: its kit colours and the pattern it actually plays in — Juventus stripes, PSG's sash, Newcastle's black and white — generated into original badge art with the club's monogram, plus the national flag of its league, since flags of nations aren't anyone's copyright. Names are text. `lib/clubs.ts` is where all of that lives.
 
 ## How the season is simulated
 
@@ -49,9 +53,9 @@ I originally wanted the median draft to go unbeaten around 10% of the time. A 36
 
 ## Sharing
 
-A finished run compresses to a 32-character base64url code: version byte, formation id, 11 player ids. `/r/[code]` decodes it, re-runs the sim and renders the same result; `/api/og` draws the share card via `next/og` so links unfurl properly. Both are pure functions of the code, so the page is statically rendered on demand and the card is served `immutable` — a link that goes around a group chat is rendered once, not once per view. A bad or truncated code 404s to a branded page, and its card still unfurls as the game rather than a broken image.
+A finished run compresses to a 35-character base64url code: version byte, formation id, 11 player ids, manager id. `/r/[code]` decodes it, re-runs the sim and renders the same result; `/api/og` draws the share card via `next/og` so links unfurl properly. Both are pure functions of the code, so the page is statically rendered on demand and the card is served `immutable` — a link that goes around a group chat is rendered once, not once per view. A bad or truncated code 404s to a branded page, and its card still unfurls as the game rather than a broken image.
 
-**The code carries no seed, on purpose.** It used to. That meant the season was chosen at play time and travelled inside the URL, so anyone could iterate seeds and mint themselves a result: with the best legal XI a perfect 38-0-0 turned up on the fifth try, and an 80-rated squad — which goes unbeaten 0.02% of the time honestly — could reach Invincible in about 288,000 tries, a couple of seconds of compute. Now the seed is derived from the XI itself (`lib/seed.ts`), so one team plays one season, forever. The ids are sorted before hashing, so shuffling two centre-backs between slots doesn't quietly hand you 800 more seasons to fish through. You can still hand-craft a code containing eleven elite players, but that forges "I drafted this XI", which the card shows, rather than "I got this result".
+**The code carries no seed, on purpose.** It used to. That meant the season was chosen at play time and travelled inside the URL, so anyone could iterate seeds and mint themselves a result: with the best legal XI a perfect 38-0-0 turned up on the fifth try, and an 80-rated squad — which goes unbeaten 0.02% of the time honestly — could reach Invincible in about 288,000 tries, a couple of seconds of compute. Now the seed is derived from the XI and the dugout (`lib/seed.ts`), so one team plays one season, forever. The ids are sorted before hashing, so shuffling two centre-backs between slots doesn't quietly hand you 800 more seasons to fish through. You can still hand-craft a code containing eleven elite players, but that forges "I drafted this XI", which the card shows, rather than "I got this result".
 
 There is no database and no accounts. The URL *is* the save file.
 

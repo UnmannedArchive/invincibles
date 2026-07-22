@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import {
   newRun,
-  openSlots,
-  eligibleInPool,
+  eligibleForSlot,
+  nextOpenSlot,
   applyPick,
   isComplete,
   orderedXI,
@@ -18,36 +18,6 @@ describe('newRun', () => {
     const run = newRun(0);
     expect(run.picks).toHaveLength(11);
     expect(run.picks.every((p) => p === null)).toBe(true);
-    expect(openSlots(run)).toHaveLength(11);
-  });
-});
-
-describe('eligibleInPool', () => {
-  test('returns only players whose position matches an open slot', () => {
-    const run = newRun(0); // 4-3-3: all slots open
-    const pool = getPool('Arsenal', '2000s');
-    const eligible = eligibleInPool(run, pool);
-    // all four positions have open slots, so the whole pool is eligible
-    expect(eligible.length).toBe(pool.length);
-  });
-
-  test('excludes players already picked', () => {
-    const run = newRun(0);
-    const pool = getPool('Arsenal', '2000s');
-    const gk = pool.find((p) => p.pos === 'GK')!;
-    const after = applyPick(run, GK_SLOT, gk.id);
-    const eligible = eligibleInPool(after, pool);
-    expect(eligible.find((p) => p.id === gk.id)).toBeUndefined();
-  });
-
-  test('excludes positions with no open slot left', () => {
-    let run = newRun(0); // 4-3-3 has exactly 1 GK slot
-    const pool = getPool('Arsenal', '2000s');
-    const gk = pool.find((p) => p.pos === 'GK')!;
-    run = applyPick(run, GK_SLOT, gk.id);
-    // GK slot now filled; no GK from any pool should be eligible
-    const otherPool = getPool('Chelsea', '2000s');
-    expect(eligibleInPool(run, otherPool).some((p) => p.pos === 'GK')).toBe(false);
   });
 });
 
@@ -76,22 +46,21 @@ describe('a full run', () => {
     const rng = mulberry32(99);
     let guard = 0;
     while (!isComplete(run) && guard++ < 1000) {
+      const slotIndex = nextOpenSlot(run);
       const key = spinPool(rng);
-      const pool = getPool(key.club, key.decade);
-      const eligible = eligibleInPool(run, pool);
-      if (eligible.length === 0) continue; // shouldn't happen, but skip defensively
-      const player = eligible[0];
-      const slot = firstOpen(run, player.pos);
-      run = applyPick(run, slot, player.id);
+      const eligible = eligibleForSlot(run, getPool(key.club, key.decade), slotIndex);
+      if (eligible.length === 0) continue;
+      run = applyPick(run, slotIndex, eligible[0].id);
     }
     expect(isComplete(run)).toBe(true);
     const xi = orderedXI(run);
     expect(xi).toHaveLength(11);
     // XI position multiset matches the formation slot multiset
-    const formation = getFormation(0);
-    expect(xi.map((p) => p.pos)).toEqual(formation.slots.map((s) => s.pos));
+    expect(xi.map((p) => p.pos)).toEqual(getFormation(0).slots.map((s) => s.pos));
   });
 
+  // The one bug that would ruin a run outright: a position nobody in the pool
+  // can fill. Pool minimums are meant to make it impossible.
   test('never dead-ends across many seeded playthroughs', () => {
     for (let seed = 0; seed < 200; seed++) {
       for (const fid of [0, 1, 2]) {
@@ -99,12 +68,11 @@ describe('a full run', () => {
         const rng = mulberry32(seed * 7 + fid);
         let guard = 0;
         while (!isComplete(run) && guard++ < 500) {
+          const slotIndex = nextOpenSlot(run);
           const key = spinPool(rng);
-          const pool = getPool(key.club, key.decade);
-          const eligible = eligibleInPool(run, pool);
+          const eligible = eligibleForSlot(run, getPool(key.club, key.decade), slotIndex);
           if (eligible.length === 0) continue;
-          const player = eligible[Math.floor(rng() * eligible.length)];
-          run = applyPick(run, firstOpen(run, player.pos), player.id);
+          run = applyPick(run, slotIndex, eligible[Math.floor(rng() * eligible.length)].id);
         }
         expect(isComplete(run)).toBe(true);
       }

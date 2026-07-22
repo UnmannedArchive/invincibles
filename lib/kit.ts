@@ -1,12 +1,6 @@
 import { PLAYERS } from './data';
 import type { Player } from './types';
 
-export function shirtNumber(slotIndex: number): number {
-  // Slot order runs GK → defence → midfield → attack, so 1..11 reads as a
-  // conventional team sheet (keeper 1, back line 2-5, and so on).
-  return slotIndex + 1;
-}
-
 // Nobiliary particles belong to the surname: van Dijk, Di Maria, van der Sar.
 // Taking the last word alone turned those into Dijk, Maria and Sar.
 const PARTICLES = new Set([
@@ -85,8 +79,4 @@ export function tierOf(rating: number): CardTier {
   if (rating >= 85) return 'gold';
   if (rating >= 80) return 'silver';
   return 'bronze';
-}
-
-export function eraOf(player: Player): string {
-  return player.decade;
 }

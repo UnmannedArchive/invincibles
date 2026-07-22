@@ -1,5 +1,5 @@
 import { attributesFor } from "@/lib/attributes";
-import { displayName, eraOf, tierOf } from "@/lib/kit";
+import { displayName, tierOf } from "@/lib/kit";
 import { Crest, Flag } from "./Badge";
 import type { Player } from "@/lib/types";
 
@@ -43,7 +43,7 @@ export function PlayerCard({
             <span className="fut-rule" />
             <Flag club={player.club} />
             <Crest club={player.club} />
-            <span className="fut-era">{eraOf(player)}</span>
+            <span className="fut-era">{player.decade}</span>
           </span>
           <Shards />
         </span>

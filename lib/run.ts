@@ -1,4 +1,4 @@
-import type { Player, Pos } from './types';
+import type { Player } from './types';
 import { getFormation } from './formations';
 import { POOL_KEYS, playerById, type PoolKey } from './data';
 import type { Rng } from './rng';
@@ -37,28 +37,8 @@ export function eligibleForSlot(run: RunState, pool: Player[], slotIndex: number
   return pool.filter((p) => p.pos === slot.pos && !taken.has(p.id));
 }
 
-export function openSlots(run: RunState): number[] {
-  return run.picks.flatMap((p, i) => (p === null ? [i] : []));
-}
-
-/** Positions that still have at least one open slot. */
-function openPositions(run: RunState): Set<Pos> {
-  const formation = getFormation(run.formationId);
-  const open = new Set<Pos>();
-  run.picks.forEach((p, i) => {
-    if (p === null) open.add(formation.slots[i].pos);
-  });
-  return open;
-}
-
 function pickedIds(run: RunState): Set<number> {
   return new Set(run.picks.filter((p): p is number => p !== null));
-}
-
-export function eligibleInPool(run: RunState, pool: Player[]): Player[] {
-  const positions = openPositions(run);
-  const taken = pickedIds(run);
-  return pool.filter((p) => positions.has(p.pos) && !taken.has(p.id));
 }
 
 export function applyPick(run: RunState, slotIndex: number, playerId: number): RunState {
