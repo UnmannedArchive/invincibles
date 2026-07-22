@@ -1,5 +1,6 @@
 import { attributesFor } from "@/lib/attributes";
-import { displayName, eraOf, monogramOf, tierOf } from "@/lib/kit";
+import { displayName, eraOf, tierOf } from "@/lib/kit";
+import { Crest, Flag } from "./Badge";
 import type { Player } from "@/lib/types";
 
 /** The crystal shards a Team of the Year card wears instead of a photo. */
@@ -17,9 +18,11 @@ function Shards() {
 
 export function PlayerCard({
   player,
+  position,
   onPick,
 }: {
   player: Player;
+  position?: string;
   onPick?: (player: Player) => void;
 }) {
   const tier = tierOf(player.rating);
@@ -36,10 +39,11 @@ export function PlayerCard({
         <span className="fut-head">
           <span className="fut-stat">
             <span className="fut-rating">{player.rating}</span>
-            <span className="fut-pos">{player.pos}</span>
+            <span className="fut-pos">{position ?? player.pos}</span>
             <span className="fut-rule" />
+            <Flag club={player.club} />
+            <Crest club={player.club} />
             <span className="fut-era">{eraOf(player)}</span>
-            <span className="fut-badge">{monogramOf(player.club)}</span>
           </span>
           <Shards />
         </span>

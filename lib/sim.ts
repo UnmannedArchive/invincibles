@@ -1,6 +1,7 @@
 import { mulberry32, poisson, type Rng } from './rng';
 import { getFormation } from './formations';
 import { LEAGUE, YOUR_CLUB, opponentName } from './opponents';
+import type { Manager } from './managers';
 import type { MatchResult, Player, Pos, SeasonResult, TableRow, Tier } from './types';
 
 export interface SimConfig {
@@ -86,11 +87,15 @@ export function simulateSeason(
   xi: Player[],
   formationId: number,
   seed: number,
+  manager: Manager | null = null,
   cfg: SimConfig = DEFAULT_CONFIG,
 ): SeasonResult {
   assertXiMatchesFormation(xi, formationId);
   const rng = mulberry32(seed);
-  const { attack, defense } = teamRatings(xi);
+  const base = teamRatings(xi);
+  // The dugout is worth a few rating points at each end of the pitch.
+  const attack = base.attack + (manager?.attack ?? 0);
+  const defense = base.defense + (manager?.defense ?? 0);
   const n = cfg.opponents.length;
 
   // Each opponent twice, shuffled off the same seed: the run of fixtures is

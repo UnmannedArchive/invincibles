@@ -301,11 +301,34 @@ body {
   background: color-mix(in srgb, var(--tier) 55%, transparent);
   margin: 5px 0;
 }
-.fut-era,
-.fut-badge {
+.fut-era {
   font-family: var(--font-data);
   color: var(--chalk-dim);
   letter-spacing: 0.04em;
+}
+
+/* ---- Club badge + league flag ----------------------------------------- */
+.crest {
+  display: grid;
+  place-items: center;
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+  border: 1px solid rgba(5, 7, 14, 0.5);
+}
+.crest-mono {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 0.44rem;
+  letter-spacing: -0.02em;
+  color: #05070e;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0 2px;
+  border-radius: 2px;
+  margin-bottom: 22%;
+}
+.flag {
+  display: block;
+  border: 1px solid rgba(5, 7, 14, 0.55);
+  border-radius: 1px;
 }
 .fut-shards {
   position: absolute;
@@ -362,13 +385,11 @@ body {
   margin-top: 2px;
 }
 .fut-lg .fut-era {
-  font-size: 0.6rem;
-}
-.fut-lg .fut-badge {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   margin-top: 5px;
-  padding: 2px 5px;
-  border: 1px solid color-mix(in srgb, var(--tier) 40%, transparent);
+}
+.fut-lg .flag {
+  margin-bottom: 5px;
 }
 .fut-lg .fut-name {
   font-size: 0.98rem;
@@ -405,6 +426,119 @@ body {
   letter-spacing: -0.02em;
   padding: 2px 2px 9px;
   color: var(--chalk);
+}
+
+/* ---- The position being drafted --------------------------------------- */
+.picking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  background: var(--grad-soft);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+}
+.picking-pos {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ice);
+}
+.picking-note {
+  font-size: 0.78rem;
+  color: var(--chalk-dim);
+  line-height: 1.25;
+}
+
+/* ---- Manager cards (the last pick) ------------------------------------ */
+.gaffer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.gaffer {
+  --touch: var(--ice);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 12px 11px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--chalk);
+  background: linear-gradient(158deg, rgba(18, 229, 255, 0.1) 0%, transparent 60%),
+    var(--panel-solid);
+  border: 1px solid color-mix(in srgb, var(--touch) 45%, transparent);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.gaffer:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+.gaffer-attacking {
+  --touch: var(--fuchsia);
+}
+.gaffer-balanced {
+  --touch: var(--ice);
+}
+.gaffer-defensive {
+  --touch: var(--volt);
+}
+.gaffer-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.gaffer-rating {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--touch);
+}
+.gaffer-style {
+  font-family: var(--font-data);
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--touch);
+}
+.gaffer-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+.gaffer-club {
+  font-family: var(--font-data);
+  font-size: 0.56rem;
+  color: var(--chalk-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gaffer-bonus {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-family: var(--font-data);
+  font-size: 0.62rem;
+  color: var(--chalk-dim);
+  border-top: 1px solid rgba(120, 170, 235, 0.16);
+  padding-top: 6px;
+}
+
+/* the dugout line on a result */
+.dugout {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+  margin-top: 10px;
+}
+.dugout b {
+  color: var(--ice);
+  font-weight: 700;
 }
 
 /* ---- Split-flap spin board -------------------------------------------- */

@@ -9,7 +9,11 @@
  *    equivalent players between slots and quietly get 800-odd seasons to
  *    choose from off the same XI.
  */
-export function seasonSeed(formationId: number, playerIds: number[]): number {
+export function seasonSeed(
+  formationId: number,
+  playerIds: number[],
+  managerId: number | null = null,
+): number {
   const ids = [...playerIds].sort((a, b) => a - b);
   // FNV-1a, 32-bit.
   let hash = 0x811c9dc5;
@@ -22,5 +26,9 @@ export function seasonSeed(formationId: number, playerIds: number[]): number {
     mix(id >>> 8);
     mix(id);
   }
+  // The dugout is part of the team, so it's part of the season.
+  const manager = managerId ?? 0;
+  mix(manager >>> 8);
+  mix(manager);
   return hash >>> 0;
 }

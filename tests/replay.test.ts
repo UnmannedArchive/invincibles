@@ -35,7 +35,7 @@ describe('replayFromCode', () => {
     const replay = replayFromCode(encodeRun(sharedFromRun(run)))!;
     expect(replay).not.toBeNull();
     expect(replay.result).toEqual(playRun(run));
-    expect(replay.run).toEqual({ formationId: run.formationId, picks: run.picks });
+    expect(replay.run).toEqual({ formationId: run.formationId, picks: run.picks, managerId: null });
   });
 
   test('returns null for a code that is not a code', () => {
@@ -45,13 +45,13 @@ describe('replayFromCode', () => {
   });
 
   test('returns null when a code names a player who does not exist', () => {
-    const code = encodeRun({ formationId: 0, playerIds: Array(11).fill(65535) });
+    const code = encodeRun({ formationId: 0, playerIds: Array(11).fill(65535), managerId: null });
     expect(replayFromCode(code)).toBeNull();
   });
 
   test('returns null when the XI does not fit the formation it claims', () => {
     const run = fill(0, 'Liverpool', '1980s'); // 4-3-3 shaped
-    const code = encodeRun({ formationId: 2, playerIds: orderedXI(run).map((p) => p.id) });
+    const code = encodeRun({ formationId: 2, playerIds: orderedXI(run).map((p) => p.id), managerId: null });
     expect(replayFromCode(code)).toBeNull();
   });
 });

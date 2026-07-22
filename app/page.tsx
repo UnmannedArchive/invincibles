@@ -5,12 +5,15 @@ import { getFormation } from "@/lib/formations";
 import { getPool, type PoolKey } from "@/lib/data";
 import {
   newRun,
-  eligibleInPool,
+  eligibleForSlot,
   applyPick,
+  setManager,
+  nextOpenSlot,
   isComplete,
   spinPool,
   type RunState,
 } from "@/lib/run";
+import { managerShortlist, type Manager } from "@/lib/managers";
 import { playRun } from "@/lib/replay";
 import { sharedFromRun, encodeRun } from "@/lib/encode";
 import { mulberry32 } from "@/lib/rng";
@@ -21,8 +24,24 @@ import { Pitch } from "./components/Pitch";
 import { PickSheet } from "./components/PickSheet";
 import { Vidiprinter } from "./components/Vidiprinter";
 import { ResultView } from "./components/ResultView";
+import { ManagerPicker } from "./components/ManagerPicker";
 
-type Phase = "setup" | "drafting" | "reveal" | "result";
+// What the slot being drafted actually asks for, in a player's words.
+const POSITION_NOTE: Record<string, string> = {
+  GK: "Last line — shot-stopper",
+  LB: "Left back, overlaps the wing",
+  RB: "Right back, overlaps the wing",
+  CB: "Centre half — head it, win it",
+  CDM: "Sits in front of the back line",
+  CM: "Runs the middle of the park",
+  LM: "Left of midfield",
+  RM: "Right of midfield",
+  LW: "Left wing — beat your man",
+  RW: "Right wing — beat your man",
+  ST: "Up top. Put it away",
+};
+
+type Phase = "setup" | "drafting" | "manager" | "reveal" | "result";
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("setup");
@@ -33,26 +52,31 @@ export default function Home() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<SeasonResult | null>(null);
+  const [shortlist, setShortlist] = useState<Manager[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
   const drafted = run.picks.filter((p) => p !== null).length;
-  const complete = isComplete(run);
+  const slotIndex = nextOpenSlot(run);
+  const slot =
+    slotIndex === -1 ? null : getFormation(run.formationId).slots[slotIndex];
 
   const start = () => {
     setRun(newRun(formationId));
     setSpin(null);
     setSpinKey(0);
+    setShortlist([]);
     setPhase("drafting");
   };
 
   const doSpin = useCallback(() => {
     if (spinning || sheetOpen) return;
-    // Every pool is guaranteed to hold an eligible player for an open slot,
-    // but guard defensively in case that invariant ever changes.
+    const openSlot = nextOpenSlot(run);
+    // Pool minimums guarantee a candidate for whatever position is open, but
+    // re-spin defensively in case that invariant ever changes.
     const rng = mulberry32((Date.now() ^ (spinKey * 2654435761)) >>> 0);
     let key = spinPool(rng);
     for (let i = 0; i < 8; i++) {
-      if (eligibleInPool(run, getPool(key.club, key.decade)).length > 0) break;
+      if (eligibleForSlot(run, getPool(key.club, key.decade), openSlot).length > 0) break;
       key = spinPool(rng);
     }
     setSpin(key);
@@ -65,20 +89,24 @@ export default function Home() {
     setSheetOpen(true);
   }, []);
 
+  // You're always picking for one position, the way a FUT draft does.
   const onPick = (player: Player) => {
-    const formation = getFormation(run.formationId);
-    const slot = formation.slots.findIndex(
-      (s, i) => s.pos === player.pos && run.picks[i] === null,
-    );
-    if (slot === -1) return;
-    setRun((r) => applyPick(r, slot, player.id));
+    if (slotIndex === -1) return;
+    const filled = applyPick(run, slotIndex, player.id);
+    setRun(filled);
     setSheetOpen(false);
+    if (isComplete(filled)) {
+      setShortlist(managerShortlist(mulberry32(Date.now() >>> 0)));
+      setPhase("manager");
+    }
   };
 
-  // The season comes from the XI, not from a roll — this exact team always
-  // plays this exact season, for you and for anyone you send it to.
-  const playSeason = () => {
-    setResult(playRun(run));
+  // The season comes from the XI and the dugout, not from a roll — this exact
+  // team always plays this exact season, for you and anyone you send it to.
+  const appointManager = (manager: Manager) => {
+    const ready = setManager(run, manager.id);
+    setRun(ready);
+    setResult(playRun(ready));
     setPhase("reveal");
   };
 
@@ -95,8 +123,11 @@ export default function Home() {
   };
 
   const eligible = useMemo(
-    () => (spin ? eligibleInPool(run, getPool(spin.club, spin.decade)) : []),
-    [spin, run],
+    () =>
+      spin && slotIndex !== -1
+        ? eligibleForSlot(run, getPool(spin.club, spin.decade), slotIndex)
+        : [],
+    [spin, run, slotIndex],
   );
 
   return (
@@ -133,12 +164,21 @@ export default function Home() {
             }}
           >
             <span className="eyebrow">
-              {getFormation(run.formationId).name} · drafting
+              {getFormation(run.formationId).name} · now picking
             </span>
-            <span className="data" style={{ color: "var(--gold)" }}>
+            <span className="data" style={{ color: "var(--ice)" }}>
               {drafted} / 11
             </span>
           </div>
+
+          {slot && (
+            <div className="picking">
+              <span className="picking-pos">{slot.label}</span>
+              <span className="picking-note">
+                {POSITION_NOTE[slot.label] ?? "Fill the slot"}
+              </span>
+            </div>
+          )}
 
           <SplitFlap
             club={spin ? spin.club : "Invincibles"}
@@ -149,15 +189,32 @@ export default function Home() {
 
           <Pitch run={run} />
 
-          {complete ? (
-            <button className="btn" onClick={playSeason}>
-              Play the season
-            </button>
-          ) : (
-            <button className="btn" onClick={doSpin} disabled={spinning}>
-              {spinning ? "…" : drafted === 0 ? "Spin" : "Spin again"}
-            </button>
-          )}
+          <button className="btn" onClick={doSpin} disabled={spinning}>
+            {spinning ? "…" : drafted === 0 ? "Spin" : "Spin again"}
+          </button>
+        </section>
+      )}
+
+      {phase === "manager" && (
+        <section style={{ marginTop: 18, display: "grid", gap: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+            }}
+          >
+            <span className="eyebrow">The last pick</span>
+            <span className="data" style={{ color: "var(--ice)" }}>
+              11 / 11
+            </span>
+          </div>
+          <p style={{ color: "var(--chalk-dim)", lineHeight: 1.5, fontSize: "0.9rem" }}>
+            Appoint a manager. Attacking coaches buy you goals, defensive ones
+            buy clean sheets — and the season starts the moment you choose.
+          </p>
+          <ManagerPicker managers={shortlist} onPick={appointManager} />
+          <Pitch run={run} />
         </section>
       )}
 
@@ -193,10 +250,11 @@ export default function Home() {
         </section>
       )}
 
-      {sheetOpen && spin && (
+      {sheetOpen && spin && slot && (
         <PickSheet
           club={spin.club}
           decade={spin.decade}
+          position={slot.label}
           eligible={eligible}
           onPick={onPick}
           onClose={() => setSheetOpen(false)}

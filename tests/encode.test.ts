@@ -7,7 +7,7 @@ import { seasonSeed } from '../lib/seed';
 import { getFormation } from '../lib/formations';
 
 function sampleShared(): SharedRun {
-  return { formationId: 2, playerIds: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110] };
+  return { formationId: 2, playerIds: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], managerId: null };
 }
 
 function fillFrom(formationId: number, club: string, decade: string) {
@@ -35,7 +35,7 @@ describe('encodeRun / decodeRun', () => {
   // into the code, anyone can grind seeds and mint themselves a perfect season.
   test('carries no seed', () => {
     const code = encodeRun(sampleShared());
-    expect(code).toHaveLength(32);
+    expect(code).toHaveLength(35);
     expect(decodeRun(code)).not.toHaveProperty('seed');
   });
 
@@ -43,6 +43,7 @@ describe('encodeRun / decodeRun', () => {
     const shared: SharedRun = {
       formationId: 1,
       playerIds: [65535, 6160, 5000, 4001, 3500, 3001, 2500, 2001, 1500, 500, 0],
+      managerId: 30,
     };
     expect(decodeRun(encodeRun(shared))).toEqual(shared);
   });
@@ -65,12 +66,13 @@ describe('encodeRun / decodeRun', () => {
 
   // Old links encoded a seed and ran 38 characters. They must fail loudly
   // rather than quietly decode into some other XI.
-  test('rejects a code from the previous version', () => {
-    expect(() => decodeRun('A'.repeat(38))).toThrow();
+  test('rejects codes from previous versions', () => {
+    expect(() => decodeRun('A'.repeat(38))).toThrow(); // v1 carried a seed
+    expect(() => decodeRun('A'.repeat(32))).toThrow(); // v2 had no manager
   });
 
   test('rejects an XI that is not 11 players', () => {
-    expect(() => encodeRun({ formationId: 0, playerIds: [1, 2, 3] })).toThrow();
+    expect(() => encodeRun({ formationId: 0, playerIds: [1, 2, 3], managerId: null })).toThrow();
   });
 });
 

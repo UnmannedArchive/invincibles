@@ -130,6 +130,7 @@ export async function GET(req: Request) {
           </div>
           <div style={{ display: "flex", fontSize: 28, marginTop: 8, color: DIM }}>
             Finished {ordinal(result.position)} of 20
+            {replay.manager ? ` · managed by ${replay.manager.name}` : ""}
           </div>
         </div>
 

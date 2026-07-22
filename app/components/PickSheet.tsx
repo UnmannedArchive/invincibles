@@ -2,37 +2,28 @@
 
 import { useEffect, useRef } from "react";
 import { PlayerCard } from "./PlayerCard";
-import type { Player, Pos } from "@/lib/types";
-
-const POS_ORDER: Pos[] = ["GK", "DF", "MF", "FW"];
-const POS_LABEL: Record<Pos, string> = {
-  GK: "Goalkeepers",
-  DF: "Defenders",
-  MF: "Midfielders",
-  FW: "Forwards",
-};
+import type { Player } from "@/lib/types";
 
 export function PickSheet({
   club,
   decade,
+  position,
   eligible,
   onPick,
   onClose,
 }: {
   club: string;
   decade: string;
+  position: string;
   eligible: Player[];
   onPick: (player: Player) => void;
   onClose: () => void;
 }) {
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  const groups = POS_ORDER.map((pos) => ({
-    pos,
-    players: eligible
-      .filter((p) => p.pos === pos)
-      .sort((a, b) => b.rating - a.rating),
-  })).filter((g) => g.players.length > 0);
+  // Everyone offered can play the one slot being filled, so there is nothing
+  // to group by — just the best candidates this club and era can give you.
+  const candidates = [...eligible].sort((a, b) => b.rating - a.rating);
 
   // It's a modal: escape closes it, and the tab loop stays inside it.
   useEffect(() => {
@@ -73,22 +64,22 @@ export function PickSheet({
     >
       <div className="sheet" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-head">
-          <div className="eyebrow">{decade} · pick one for an open slot</div>
+          <div className="eyebrow">
+            {decade} · pick your {position}
+          </div>
           <div className="display" style={{ fontSize: "1.9rem", marginTop: 4 }}>
             {club}
           </div>
         </div>
         <div className="sheet-scroll">
-          {groups.map((g) => (
-            <div key={g.pos}>
-              <div className="pos-heading">{POS_LABEL[g.pos]}</div>
-              <div className="card-grid">
-                {g.players.map((p) => (
-                  <PlayerCard key={p.id} player={p} onPick={onPick} />
-                ))}
-              </div>
-            </div>
-          ))}
+          <div className="pos-heading">
+            {candidates.length} available for {position}
+          </div>
+          <div className="card-grid">
+            {candidates.map((p) => (
+              <PlayerCard key={p.id} player={p} position={position} onPick={onPick} />
+            ))}
+          </div>
         </div>
       </div>
     </div>

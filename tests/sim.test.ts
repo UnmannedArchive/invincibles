@@ -63,13 +63,13 @@ describe('simulateSeason with a custom config', () => {
   test('explicit default config matches the implicit default', async () => {
     const xi = xiFor(0, 85);
     const { DEFAULT_CONFIG } = await import('../lib/sim');
-    expect(simulateSeason(xi, 0, 5, DEFAULT_CONFIG)).toEqual(simulateSeason(xi, 0, 5));
+    expect(simulateSeason(xi, 0, 5, null, DEFAULT_CONFIG)).toEqual(simulateSeason(xi, 0, 5));
   });
 
   test('season length follows the configured opponent list', async () => {
     const { DEFAULT_CONFIG } = await import('../lib/sim');
     const config = { ...DEFAULT_CONFIG, opponents: [70, 75, 80] };
-    const r = simulateSeason(xiFor(0, 85), 0, 5, config);
+    const r = simulateSeason(xiFor(0, 85), 0, 5, null, config);
     expect(r.matches).toHaveLength(6);
     expect(r.wins + r.draws + r.losses).toBe(6);
   });
@@ -155,5 +155,50 @@ describe('the final table', () => {
   test('names the opposition', () => {
     const r = simulateSeason(xiFor(0, 85), 0, 5);
     for (const row of r.table) expect(row.name.length).toBeGreaterThan(2);
+  });
+});
+
+describe('the manager', () => {
+  const attacking = { id: 1, name: 'A', club: 'X', era: '1990s', rating: 90, style: 'attacking' as const, attack: 4, defense: 0 };
+  const defensive = { id: 2, name: 'D', club: 'X', era: '1990s', rating: 90, style: 'defensive' as const, attack: 0, defense: 4 };
+
+  test('changes the season a squad plays', () => {
+    const xi = xiFor(0, 85);
+    expect(simulateSeason(xi, 0, 99, attacking)).not.toEqual(simulateSeason(xi, 0, 99, null));
+  });
+
+  test('an attacking manager scores more than a defensive one', () => {
+    let attackGoals = 0;
+    let defenceGoals = 0;
+    for (let seed = 0; seed < 40; seed++) {
+      attackGoals += simulateSeason(xiFor(0, 85), 0, seed, attacking).goalsFor;
+      defenceGoals += simulateSeason(xiFor(0, 85), 0, seed, defensive).goalsFor;
+    }
+    expect(attackGoals).toBeGreaterThan(defenceGoals);
+  });
+
+  test('a defensive manager concedes fewer than an attacking one', () => {
+    let attackConceded = 0;
+    let defenceConceded = 0;
+    for (let seed = 0; seed < 40; seed++) {
+      attackConceded += simulateSeason(xiFor(0, 85), 0, seed, attacking).goalsAgainst;
+      defenceConceded += simulateSeason(xiFor(0, 85), 0, seed, defensive).goalsAgainst;
+    }
+    expect(defenceConceded).toBeLessThan(attackConceded);
+  });
+
+  test('no manager is the same as a manager with no bonuses', () => {
+    const none = { ...attacking, attack: 0, defense: 0 };
+    expect(simulateSeason(xiFor(0, 85), 0, 5, none)).toEqual(simulateSeason(xiFor(0, 85), 0, 5, null));
+  });
+
+  test('a good manager is worth points over a season', () => {
+    let withManager = 0;
+    let without = 0;
+    for (let seed = 0; seed < 40; seed++) {
+      withManager += simulateSeason(xiFor(0, 84), 0, seed, attacking).points;
+      without += simulateSeason(xiFor(0, 84), 0, seed, null).points;
+    }
+    expect(withManager).toBeGreaterThan(without);
   });
 });

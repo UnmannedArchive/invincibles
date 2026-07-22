@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { SeasonResult, TableRow, Tier } from "@/lib/types";
 import type { RunState } from "@/lib/run";
 import { getFormation } from "@/lib/formations";
+import { managerById } from "@/lib/managers";
 import { Pitch } from "./Pitch";
 
 const TIER_LABEL: Record<Tier, string> = {
@@ -80,6 +81,7 @@ export function ResultView({
   actions?: ReactNode;
 }) {
   const formation = getFormation(run.formationId);
+  const manager = run.managerId === null ? null : managerById(run.managerId);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div className="verdict">
@@ -102,6 +104,12 @@ export function ResultView({
         >
           {blurb(result)}
         </p>
+        {manager && (
+          <div className="dugout">
+            Managed by <b>{manager.name}</b> · +{manager.attack} att · +
+            {manager.defense} def
+          </div>
+        )}
       </div>
 
       <div className="tally">
