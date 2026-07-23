@@ -30,7 +30,7 @@ const CARD_COLOR: Record<CardTier, string> = {
 };
 
 function tierColor(tier: Tier): string {
-  return tier === "none" ? DIM : tier === "champions" ? INK : "#12e5ff";
+  return tier === "none" ? DIM : tier === "champions" ? INK : "#ff2e63";
 }
 
 function ordinal(n: number): string {
@@ -105,7 +105,7 @@ export async function GET(req: Request) {
             alignItems: "center",
             letterSpacing: 9,
             fontSize: 28,
-            color: "#12e5ff",
+            color: "#ff2e63",
           }}
         >
           <span>I N V I N C I B L E S</span>
@@ -152,7 +152,7 @@ export async function GET(req: Request) {
           alignItems: "center",
           justifyContent: "center",
           background: "#05070e",
-          color: "#12e5ff",
+          color: "#ff2e63",
           fontSize: 72,
           fontWeight: 800,
           letterSpacing: 8,

@@ -55,7 +55,7 @@ export default async function SharedRunPage({ params }: Params) {
       <header>
         <div className="eyebrow">A shared season</div>
         <h1
-          className="wordmark"
+          className="wordmark wordmark-ink"
           style={{ fontSize: "clamp(2.4rem, 13.5vw, 3.8rem)" }}
         >
           Invinci<span className="go">bles</span>

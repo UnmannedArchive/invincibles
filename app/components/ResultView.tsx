@@ -96,7 +96,7 @@ export function ResultView({
         </div>
         <p
           style={{
-            color: "var(--chalk-dim)",
+            color: "var(--ink-2)",
             fontSize: "0.9rem",
             marginTop: 8,
             maxWidth: 340,

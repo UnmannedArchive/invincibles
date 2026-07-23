@@ -1,5 +1,6 @@
 import { attributesFor } from "@/lib/attributes";
 import { displayName, tierOf } from "@/lib/kit";
+import { roleOf } from "@/lib/roles";
 import { Crest, Flag } from "./Badge";
 import type { Player } from "@/lib/types";
 
@@ -39,7 +40,7 @@ export function PlayerCard({
         <span className="fut-head">
           <span className="fut-stat">
             <span className="fut-rating">{player.rating}</span>
-            <span className="fut-pos">{position ?? player.pos}</span>
+            <span className="fut-pos">{position ?? roleOf(player)}</span>
             <span className="fut-rule" />
             <Flag club={player.club} />
             <Crest club={player.club} />
@@ -73,7 +74,7 @@ export function MiniCard({ player, position }: { player: Player; position?: stri
       <span className="fut-body">
         <span className="fut-stat">
           <span className="fut-rating">{player.rating}</span>
-          <span className="fut-pos">{position ?? player.pos}</span>
+          <span className="fut-pos">{position ?? roleOf(player)}</span>
         </span>
         <span className="fut-mini-badge">
           <Crest club={player.club} size={13} />

@@ -125,24 +125,37 @@ export default function Home() {
 
   return (
     <main className="shell">
-      <Header />
+      {phase !== "setup" && <TopBar phase={phase} />}
 
       {phase === "setup" && (
-        <section style={{ marginTop: 22, display: "grid", gap: 18 }}>
-          <p style={{ color: "var(--chalk-dim)", lineHeight: 1.5 }}>
-            Spin the eras. Draft a full XI from football history — one player per
-            spin. Then play the 38-game season and see how far the unbeaten run
-            holds.
-          </p>
-          <div>
-            <div className="eyebrow" style={{ marginBottom: 8 }}>
-              Pick your shape
+        <section style={{ display: "grid", gap: 12 }}>
+          <div className="poster">
+            <div className="poster-kicker">The unbeaten season</div>
+            <h1
+              className="wordmark"
+              style={{ fontSize: "clamp(2.5rem, 14vw, 4.2rem)", marginTop: 6 }}
+            >
+              Invinci<span className="go">bles</span>
+            </h1>
+            <p className="poster-line">
+              Spin the eras. Draft a full XI from football history — one player
+              per spin — then play the 38-game season and see how far the
+              unbeaten run holds.
+            </p>
+          </div>
+
+          <div className="tile">
+            <div className="tile-head">
+              <span className="tile-title">Pick your shape</span>
+              <span className="chip">Step 1</span>
             </div>
             <FormationPicker selected={formationId} onSelect={setFormationId} />
           </div>
+
           <button className="btn" onClick={start}>
             Start drafting
           </button>
+
           <LadderKey />
         </section>
       )}
@@ -159,7 +172,7 @@ export default function Home() {
             <span className="eyebrow">
               {getFormation(run.formationId).name} · drafting
             </span>
-            <span className="data" style={{ color: "var(--ice)" }}>
+            <span className="data" style={{ color: "var(--magenta)" }}>
               {drafted} / 11
             </span>
           </div>
@@ -189,11 +202,11 @@ export default function Home() {
             }}
           >
             <span className="eyebrow">The last pick</span>
-            <span className="data" style={{ color: "var(--ice)" }}>
+            <span className="data" style={{ color: "var(--magenta)" }}>
               11 / 11
             </span>
           </div>
-          <p style={{ color: "var(--chalk-dim)", lineHeight: 1.5, fontSize: "0.9rem" }}>
+          <p style={{ color: "var(--ink-2)", lineHeight: 1.5, fontSize: "0.9rem" }}>
             Appoint a manager. Attacking coaches buy you goals, defensive ones
             buy clean sheets — and the season starts the moment you choose.
           </p>
@@ -249,13 +262,35 @@ export default function Home() {
   );
 }
 
-function Header() {
+const STAGES: { id: Phase; label: string }[] = [
+  { id: "drafting", label: "Draft" },
+  { id: "manager", label: "Manager" },
+  { id: "reveal", label: "Season" },
+  { id: "result", label: "Result" },
+];
+
+/** Menu bar: the wordmark, and which stage of a run you're on. */
+function TopBar({ phase }: { phase: Phase }) {
+  const current = STAGES.findIndex((s) => s.id === phase);
   return (
     <header>
-      <div className="eyebrow">The unbeaten season</div>
-      <h1 className="wordmark" style={{ fontSize: "clamp(2.5rem, 14vw, 4.2rem)" }}>
+      <h1
+        className="wordmark wordmark-ink"
+        style={{ fontSize: "clamp(1.8rem, 8vw, 2.4rem)", marginBottom: 10 }}
+      >
         Invinci<span className="go">bles</span>
       </h1>
+      <nav className="stages" aria-label="Progress through this run">
+        {STAGES.map((stage, i) => (
+          <span
+            key={stage.id}
+            className={i < current ? "stage is-done" : "stage"}
+            aria-current={i === current ? "step" : undefined}
+          >
+            {stage.label}
+          </span>
+        ))}
+      </nav>
     </header>
   );
 }
