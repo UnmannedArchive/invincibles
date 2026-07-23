@@ -5,10 +5,10 @@ import { getFormation } from "@/lib/formations";
 import { getPool, type PoolKey } from "@/lib/data";
 import {
   newRun,
-  eligibleForSlot,
+  eligibleInPool,
   applyPick,
   setManager,
-  nextOpenSlot,
+  firstOpenSlotFor,
   isComplete,
   spinPool,
   type RunState,
@@ -27,21 +27,6 @@ import { Vidiprinter } from "./components/Vidiprinter";
 import { ResultView } from "./components/ResultView";
 import { ManagerPicker } from "./components/ManagerPicker";
 
-// What the slot being drafted actually asks for, in a player's words.
-const POSITION_NOTE: Record<string, string> = {
-  GK: "Last line — shot-stopper",
-  LB: "Left back, overlaps the wing",
-  RB: "Right back, overlaps the wing",
-  CB: "Centre half — head it, win it",
-  CDM: "Sits in front of the back line",
-  CM: "Runs the middle of the park",
-  LM: "Left of midfield",
-  RM: "Right of midfield",
-  LW: "Left wing — beat your man",
-  RW: "Right wing — beat your man",
-  ST: "Up top. Put it away",
-};
-
 type Phase = "setup" | "drafting" | "manager" | "reveal" | "result";
 
 export default function Home() {
@@ -57,9 +42,6 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
 
   const drafted = run.picks.filter((p) => p !== null).length;
-  const slotIndex = nextOpenSlot(run);
-  const slot =
-    slotIndex === -1 ? null : getFormation(run.formationId).slots[slotIndex];
 
   const start = () => {
     setRun(newRun(formationId));
@@ -71,13 +53,12 @@ export default function Home() {
 
   const doSpin = useCallback(() => {
     if (spinning || sheetOpen) return;
-    const openSlot = nextOpenSlot(run);
-    // Pool minimums guarantee a candidate for whatever position is open, but
-    // re-spin defensively in case that invariant ever changes.
+    // Every pool is guaranteed to hold someone for an open slot, but re-spin
+    // defensively in case that invariant ever changes.
     const rng = mulberry32((Date.now() ^ (spinKey * 2654435761)) >>> 0);
     let key = spinPool(rng);
     for (let i = 0; i < 8; i++) {
-      if (eligibleForSlot(run, getPool(key.club, key.decade), openSlot).length > 0) break;
+      if (eligibleInPool(run, getPool(key.club, key.decade)).length > 0) break;
       key = spinPool(rng);
     }
     setSpin(key);
@@ -90,10 +71,11 @@ export default function Home() {
     setSheetOpen(true);
   }, []);
 
-  // You're always picking for one position, the way a FUT draft does.
+  // One player per spin, into whichever slot of theirs is still open.
   const onPick = (player: Player) => {
-    if (slotIndex === -1) return;
-    const filled = applyPick(run, slotIndex, player.id);
+    const slot = firstOpenSlotFor(run, player.pos);
+    if (slot === -1) return;
+    const filled = applyPick(run, slot, player.id);
     setRun(filled);
     setSheetOpen(false);
     if (isComplete(filled)) {
@@ -137,11 +119,8 @@ export default function Home() {
   };
 
   const eligible = useMemo(
-    () =>
-      spin && slotIndex !== -1
-        ? eligibleForSlot(run, getPool(spin.club, spin.decade), slotIndex)
-        : [],
-    [spin, run, slotIndex],
+    () => (spin ? eligibleInPool(run, getPool(spin.club, spin.decade)) : []),
+    [spin, run],
   );
 
   return (
@@ -178,21 +157,12 @@ export default function Home() {
             }}
           >
             <span className="eyebrow">
-              {getFormation(run.formationId).name} · now picking
+              {getFormation(run.formationId).name} · drafting
             </span>
             <span className="data" style={{ color: "var(--ice)" }}>
               {drafted} / 11
             </span>
           </div>
-
-          {slot && (
-            <div className="picking">
-              <span className="picking-pos">{slot.label}</span>
-              <span className="picking-note">
-                {POSITION_NOTE[slot.label] ?? "Fill the slot"}
-              </span>
-            </div>
-          )}
 
           <SplitFlap
             club={spin ? spin.club : "Invincibles"}
@@ -264,11 +234,10 @@ export default function Home() {
         </section>
       )}
 
-      {sheetOpen && spin && slot && (
+      {sheetOpen && spin && (
         <PickSheet
           club={spin.club}
           decade={spin.decade}
-          position={slot.label}
           eligible={eligible}
           onPick={onPick}
           onClose={() => setSheetOpen(false)}

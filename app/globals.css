@@ -437,28 +437,6 @@ body {
   color: var(--chalk);
 }
 
-/* ---- The position being drafted --------------------------------------- */
-.picking {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border: 1px solid var(--line-strong);
-  background: var(--grad-soft);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
-}
-.picking-pos {
-  font-family: var(--font-display);
-  font-size: 1.9rem;
-  line-height: 1;
-  color: var(--ice);
-}
-.picking-note {
-  font-size: 0.78rem;
-  color: var(--chalk-dim);
-  line-height: 1.25;
-}
-
 /* ---- Manager cards (the last pick) ------------------------------------ */
 .gaffer-grid {
   display: grid;

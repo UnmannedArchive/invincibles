@@ -1,4 +1,4 @@
-import type { Player } from './types';
+import type { Player, Pos } from './types';
 import { getFormation } from './formations';
 import { POOL_KEYS, playerById, type PoolKey } from './data';
 import type { Rng } from './rng';
@@ -20,21 +20,31 @@ export function setManager(run: RunState, managerId: number): RunState {
   return { ...run, managerId };
 }
 
-/**
- * The slot the draft is filling right now. Slots run in team-sheet order, so a
- * draft goes keeper, back line, midfield, front line — you're picking *for a
- * position*, the way a FUT draft does, not picking whoever is best available.
- */
-export function nextOpenSlot(run: RunState): number {
-  return run.picks.findIndex((p) => p === null);
+/** Positions that still have at least one open slot. */
+function openPositions(run: RunState): Set<Pos> {
+  const formation = getFormation(run.formationId);
+  const open = new Set<Pos>();
+  run.picks.forEach((p, i) => {
+    if (p === null) open.add(formation.slots[i].pos);
+  });
+  return open;
 }
 
-/** Players in this pool who can fill that slot and aren't already picked. */
-export function eligibleForSlot(run: RunState, pool: Player[], slotIndex: number): Player[] {
-  const slot = getFormation(run.formationId).slots[slotIndex];
-  if (!slot) return [];
+/**
+ * Everyone in this pool you could still take: any position you have an open
+ * slot for, minus anyone already on the team sheet. The spin decides the club
+ * and the era; what you do with it is yours.
+ */
+export function eligibleInPool(run: RunState, pool: Player[]): Player[] {
+  const positions = openPositions(run);
   const taken = pickedIds(run);
-  return pool.filter((p) => p.pos === slot.pos && !taken.has(p.id));
+  return pool.filter((p) => positions.has(p.pos) && !taken.has(p.id));
+}
+
+/** Where a player of this position goes: the first slot still open for them. */
+export function firstOpenSlotFor(run: RunState, pos: Pos): number {
+  const formation = getFormation(run.formationId);
+  return formation.slots.findIndex((s, i) => s.pos === pos && run.picks[i] === null);
 }
 
 function pickedIds(run: RunState): Set<number> {

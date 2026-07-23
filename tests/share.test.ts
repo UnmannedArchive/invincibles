@@ -1,15 +1,18 @@
 import { describe, expect, test } from 'vitest';
 import { shareText, SQUARES } from '../lib/share';
-import { newRun, applyPick, setManager, nextOpenSlot, eligibleForSlot, isComplete } from '../lib/run';
+import { newRun, applyPick, setManager } from '../lib/run';
+import { getFormation } from '../lib/formations';
 import { getPool } from '../lib/data';
 import { playRun } from '../lib/replay';
 import { MANAGERS } from '../lib/managers';
 
 function squad(formationId = 0, managerId: number | null = MANAGERS[0].id) {
   let run = newRun(formationId);
-  while (!isComplete(run)) {
-    const slot = nextOpenSlot(run);
-    run = applyPick(run, slot, eligibleForSlot(run, getPool('Barcelona', '2010s'), slot)[0].id);
+  const pool = getPool('Barcelona', '2010s');
+  for (let slot = 0; slot < 11; slot++) {
+    const pos = getFormation(formationId).slots[slot].pos;
+    const player = pool.find((p) => p.pos === pos && !run.picks.includes(p.id))!;
+    run = applyPick(run, slot, player.id);
   }
   return managerId === null ? run : setManager(run, managerId);
 }

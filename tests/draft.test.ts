@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 import {
   newRun,
   setManager,
-  nextOpenSlot,
-  eligibleForSlot,
+  eligibleInPool,
+  firstOpenSlotFor,
   isComplete,
   isReady,
   applyPick,
@@ -20,44 +20,45 @@ const POOL = () => getPool('Barcelona', '2010s');
 function draft(formationId: number, managerId: number | null = MANAGERS[0].id) {
   let run = newRun(formationId);
   while (!isComplete(run)) {
-    const slot = nextOpenSlot(run);
-    const player = eligibleForSlot(run, POOL(), slot)[0];
-    run = applyPick(run, slot, player.id);
+    const player = eligibleInPool(run, POOL())[0];
+    run = applyPick(run, firstOpenSlotFor(run, player.pos), player.id);
   }
   return managerId === null ? run : setManager(run, managerId);
 }
 
-describe('a FUT-style draft', () => {
-  test('fills the team sheet in order: keeper first, then out from the back', () => {
-    let run = newRun(0);
-    const order: string[] = [];
-    while (!isComplete(run)) {
-      const slot = nextOpenSlot(run);
-      order.push(getFormation(0).slots[slot].label);
-      run = applyPick(run, slot, eligibleForSlot(run, POOL(), slot)[0].id);
+describe('drafting from a spin', () => {
+  test('offers anyone in the pool you still have a slot for', () => {
+    const run = newRun(0);
+    const open = new Set(getFormation(0).slots.map((s) => s.pos));
+    for (const player of eligibleInPool(run, POOL())) {
+      expect(open.has(player.pos)).toBe(true);
     }
-    expect(order).toEqual(['GK', 'LB', 'CB', 'CB', 'RB', 'CM', 'CM', 'CM', 'LW', 'ST', 'RW']);
   });
 
-  test('offers only players who can play the slot being filled', () => {
-    const run = newRun(0);
-    const slot = nextOpenSlot(run); // GK
-    for (const player of eligibleForSlot(run, POOL(), slot)) {
-      expect(player.pos).toBe('GK');
-    }
+  test('stops offering a position once its slots are full', () => {
+    let run = newRun(0);
+    const keeper = POOL().find((p) => p.pos === 'GK')!;
+    run = applyPick(run, firstOpenSlotFor(run, 'GK'), keeper.id);
+    // 4-3-3 has one keeper, so no goalkeeper should be on offer any more
+    expect(eligibleInPool(run, POOL()).some((p) => p.pos === 'GK')).toBe(false);
   });
 
   test('never offers a player already on the team sheet', () => {
     let run = newRun(0);
-    const first = eligibleForSlot(run, POOL(), 0)[0];
-    run = applyPick(run, 0, first.id);
-    for (let slot = 1; slot < 11; slot++) {
-      expect(eligibleForSlot(run, POOL(), slot).map((p) => p.id)).not.toContain(first.id);
-    }
+    const first = eligibleInPool(run, POOL())[0];
+    run = applyPick(run, firstOpenSlotFor(run, first.pos), first.id);
+    expect(eligibleInPool(run, POOL()).map((p) => p.id)).not.toContain(first.id);
   });
 
-  test('reports no open slot once the XI is full', () => {
-    expect(nextOpenSlot(draft(0))).toBe(-1);
+  test('a pick lands in the first slot still open for their position', () => {
+    const run = newRun(0);
+    // 4-3-3 back four: LB, CB, CB, RB — a defender fills the left-back slot first
+    expect(firstOpenSlotFor(run, 'DF')).toBe(1);
+    expect(getFormation(0).slots[1].label).toBe('LB');
+  });
+
+  test('reports no open slot once a position is full', () => {
+    expect(firstOpenSlotFor(draft(0), 'FW')).toBe(-1);
   });
 
   test('is only ready to play once a manager is appointed', () => {
@@ -75,13 +76,11 @@ describe('a FUT-style draft', () => {
 describe('the manager travels with the run', () => {
   test('the share code carries it', () => {
     const run = draft(0, MANAGERS[3].id);
-    const decoded = decodeRun(encodeRun(sharedFromRun(run)));
-    expect(decoded.managerId).toBe(MANAGERS[3].id);
+    expect(decodeRun(encodeRun(sharedFromRun(run))).managerId).toBe(MANAGERS[3].id);
   });
 
   test('a run with no manager still encodes', () => {
-    const decoded = decodeRun(encodeRun(sharedFromRun(draft(0, null))));
-    expect(decoded.managerId).toBeNull();
+    expect(decodeRun(encodeRun(sharedFromRun(draft(0, null)))).managerId).toBeNull();
   });
 
   test('swapping the manager changes the season', () => {
@@ -101,10 +100,8 @@ describe('the manager travels with the run', () => {
   });
 
   test('rejects a code naming a manager who does not exist', () => {
-    const run = draft(0, null);
-    const shared = sharedFromRun(run);
-    const code = encodeRun({ ...shared, managerId: 9999 });
-    expect(replayFromCode(code)).toBeNull();
+    const shared = sharedFromRun(draft(0, null));
+    expect(replayFromCode(encodeRun({ ...shared, managerId: 9999 }))).toBeNull();
   });
 
   test('codes from the previous version are rejected', () => {

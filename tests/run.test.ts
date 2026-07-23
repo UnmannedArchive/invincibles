@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import {
   newRun,
-  eligibleForSlot,
-  nextOpenSlot,
+  eligibleInPool,
+  firstOpenSlotFor,
   applyPick,
   isComplete,
   orderedXI,
@@ -46,11 +46,11 @@ describe('a full run', () => {
     const rng = mulberry32(99);
     let guard = 0;
     while (!isComplete(run) && guard++ < 1000) {
-      const slotIndex = nextOpenSlot(run);
       const key = spinPool(rng);
-      const eligible = eligibleForSlot(run, getPool(key.club, key.decade), slotIndex);
+      const eligible = eligibleInPool(run, getPool(key.club, key.decade));
       if (eligible.length === 0) continue;
-      run = applyPick(run, slotIndex, eligible[0].id);
+      const player = eligible[0];
+      run = applyPick(run, firstOpenSlotFor(run, player.pos), player.id);
     }
     expect(isComplete(run)).toBe(true);
     const xi = orderedXI(run);
@@ -68,11 +68,11 @@ describe('a full run', () => {
         const rng = mulberry32(seed * 7 + fid);
         let guard = 0;
         while (!isComplete(run) && guard++ < 500) {
-          const slotIndex = nextOpenSlot(run);
           const key = spinPool(rng);
-          const eligible = eligibleForSlot(run, getPool(key.club, key.decade), slotIndex);
+          const eligible = eligibleInPool(run, getPool(key.club, key.decade));
           if (eligible.length === 0) continue;
-          run = applyPick(run, slotIndex, eligible[Math.floor(rng() * eligible.length)].id);
+          const player = eligible[Math.floor(rng() * eligible.length)];
+          run = applyPick(run, firstOpenSlotFor(run, player.pos), player.id);
         }
         expect(isComplete(run)).toBe(true);
       }
