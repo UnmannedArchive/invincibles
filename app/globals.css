@@ -1065,6 +1065,178 @@ body {
   color: var(--ink);
 }
 
+/* ---- League: multiplayer standings ------------------------------------ */
+.join-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--teal);
+  color: #04262a;
+  border-radius: var(--r);
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.join-banner button {
+  border: none;
+  background: rgba(4, 38, 42, 0.16);
+  color: #04262a;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.join {
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 12px 12px 13px;
+}
+.join-head {
+  font-family: var(--font-data);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+.join-row {
+  display: flex;
+  gap: 8px;
+}
+.join-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 0 12px;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: #fff;
+}
+.join-input:focus-visible {
+  border-color: var(--magenta);
+}
+.join-btn {
+  width: auto;
+  flex-shrink: 0;
+  font-size: 1rem;
+  padding: 12px 20px;
+}
+
+.standings {
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 4px 8px 8px;
+}
+.standings-row {
+  display: grid;
+  grid-template-columns: 1.8em 1fr 3em 2.6em;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 6px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.standings-row + .standings-row {
+  border-top: 1px solid var(--line-2);
+}
+.standings-head {
+  font-family: var(--font-data);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding-bottom: 2px;
+}
+.standings-row .rank {
+  color: var(--ink-dim);
+  text-align: center;
+}
+.standings-row .who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.standings-row .name {
+  font-weight: 700;
+  font-size: 0.94rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.standings-row .rec {
+  font-family: var(--font-data);
+  font-size: 0.62rem;
+  color: var(--ink-dim);
+  margin-top: 1px;
+}
+.standings-row .gd {
+  text-align: right;
+  color: var(--ink-2);
+}
+.standings-row .pts {
+  text-align: right;
+  font-weight: 700;
+}
+.standings-row.leader {
+  background: rgba(255, 46, 99, 0.08);
+  border-radius: 6px;
+  box-shadow: inset 3px 0 0 var(--magenta);
+}
+.standings-row.leader .name {
+  color: var(--magenta-ink);
+}
+.ach {
+  font-family: var(--font-data);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--teal-ink);
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.supers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.super {
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 10px 12px;
+}
+.super-k {
+  display: block;
+  font-family: var(--font-data);
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.super-v {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 3px;
+}
+
 /* ---- Ladder key ------------------------------------------------------- */
 .ladder-row {
   display: flex;

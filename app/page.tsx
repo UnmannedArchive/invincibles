@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getFormation } from "@/lib/formations";
 import { getPool, type PoolKey } from "@/lib/data";
 import {
@@ -13,10 +13,11 @@ import {
   spinPool,
   type RunState,
 } from "@/lib/run";
-import { managerShortlist, type Manager } from "@/lib/managers";
+import { managerShortlist, managerById, type Manager } from "@/lib/managers";
 import { playRun } from "@/lib/replay";
 import { sharedFromRun, encodeRun } from "@/lib/encode";
 import { shareText } from "@/lib/share";
+import { surnameOf } from "@/lib/kit";
 import { mulberry32 } from "@/lib/rng";
 import type { Player, SeasonResult } from "@/lib/types";
 import { FormationPicker } from "./components/FormationPicker";
@@ -26,6 +27,7 @@ import { PickSheet } from "./components/PickSheet";
 import { Vidiprinter } from "./components/Vidiprinter";
 import { ResultView } from "./components/ResultView";
 import { ManagerPicker } from "./components/ManagerPicker";
+import { LeagueJoin, readJoiningLeague } from "./components/LeagueJoin";
 
 type Phase = "setup" | "drafting" | "manager" | "reveal" | "result";
 
@@ -40,8 +42,25 @@ export default function Home() {
   const [result, setResult] = useState<SeasonResult | null>(null);
   const [shortlist, setShortlist] = useState<Manager[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [joiningCount, setJoiningCount] = useState(0);
+
+  useEffect(() => {
+    // sessionStorage is client-only, so read it after mount (see LeagueJoin).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setJoiningCount(readJoiningLeague()?.length ?? 0);
+  }, []);
 
   const drafted = run.picks.filter((p) => p !== null).length;
+
+  // Only defined once the XI is full; the league join needs a real code.
+  const myCode = useMemo(
+    () => (isComplete(run) ? encodeRun(sharedFromRun(run)) : ""),
+    [run],
+  );
+  const defaultHandle = useMemo(() => {
+    const manager = run.managerId !== null ? managerById(run.managerId) : null;
+    return manager ? surnameOf(manager.name) : "Team";
+  }, [run.managerId]);
 
   const start = () => {
     setRun(newRun(formationId));
@@ -129,6 +148,22 @@ export default function Home() {
 
       {phase === "setup" && (
         <section style={{ display: "grid", gap: 12 }}>
+          {joiningCount > 0 && (
+            <div className="join-banner">
+              <span>
+                Joining a league of {joiningCount}. Draft your XI to add it.
+              </span>
+              <button
+                aria-label="Leave this league"
+                onClick={() => {
+                  sessionStorage.removeItem("invincibles:league");
+                  setJoiningCount(0);
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
           <div className="poster">
             <div className="poster-kicker">The unbeaten season</div>
             <h1
@@ -232,6 +267,7 @@ export default function Home() {
                 <button className="btn" onClick={share}>
                   Copy your season
                 </button>
+                <LeagueJoin code={myCode} defaultHandle={defaultHandle} />
                 <button
                   className="btn btn-ghost"
                   onClick={() => {

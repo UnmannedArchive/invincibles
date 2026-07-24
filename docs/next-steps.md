@@ -50,7 +50,11 @@ invincibles.app/r/AgATwhQ...
 
 A row of squares for the 38 results is instantly legible in a group chat and drags the link along behind it. Half a day's work, and it is probably the highest ratio of reach to effort here.
 
-## 5. Head-to-head
+## 5. Multiplayer league — SHIPPED 2026-07-24
+
+> `lib/league.ts` + `/l/[...entries]`. A league is a bundle of share codes in the URL — everyone drafts their own XI, adds their code, and the page ranks all teams by record with best-attack/meanest-defence superlatives and Champions/Invincible/Perfect badges. No backend: the URL is still the whole save file. "Add your team" carries the league through a fresh draft (sessionStorage) and appends you on finish; rotted codes are dropped so links self-heal. Head-to-head is just a two-team league, so it's covered.
+
+## 5b. Head-to-head (its own screen)
 
 `/vs/[codeA]/[codeB]`: take two shared XIs and play them against each other. Everything needed already exists — both codes decode to real XIs, the sim already plays a match between two rating pairs. It turns "look at my team" into "my team beats yours", which is the argument people actually want to have.
 

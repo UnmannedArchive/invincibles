@@ -6,8 +6,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Shared seasons are public but endless; there is nothing to index.
-      disallow: ["/r/", "/api/"],
+      // Shared seasons and leagues are public but endless; nothing to index.
+      disallow: ["/r/", "/l/", "/api/"],
     },
     sitemap: `${siteUrl()}/sitemap.xml`,
   };
